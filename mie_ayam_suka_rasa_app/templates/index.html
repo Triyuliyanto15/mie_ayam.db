@@ -1,0 +1,55 @@
+{% extends "base.html" %}{% block content %}
+<div class="row g-4">
+<div class="col-lg-7">
+<div class="card p-3 p-md-4">
+<h4 class="mb-1">Input Pesanan</h4><p class="text-secondary">Pilih menu dan jumlahnya, lalu simpan untuk mencetak struk pelanggan dan dapur.</p>
+<form id="orderForm" method="post" action="/orders">
+<div class="mb-3"><label class="form-label">No. antrean / Nama pelanggan</label><input class="form-control" name="queue_name" placeholder="Contoh: A05 / Budi" required maxlength="120"></div>
+<div class="row g-2 mb-3">
+{% for p in products %}
+<div class="col-md-6"><div class="border rounded-3 p-3 bg-white menu-row">
+<div><div class="fw-semibold">{{ p.name }}</div><div class="text-secondary small">{{ p.price|rupiah }}</div></div>
+<div class="input-group" style="width:112px"><button class="btn btn-outline-secondary qty-minus" type="button" data-id="{{ p.id }}">−</button><input class="form-control text-center qty" type="number" min="0" max="99" value="0" data-id="{{ p.id }}" data-name="{{ p.name }}" data-price="{{ p.price }}"><button class="btn btn-outline-secondary qty-plus" type="button" data-id="{{ p.id }}">+</button></div>
+</div></div>
+{% endfor %}
+</div>
+<div class="border-top pt-3">
+<div class="d-flex justify-content-between fs-5 fw-bold mb-3"><span>Total</span><span id="totalText">Rp0</span></div>
+<label class="form-label">Uang dibayarkan (Rp)</label><input class="form-control mb-2" type="number" name="payment_received" id="payment" min="0" value="0" step="500" required>
+<div class="d-flex justify-content-between mb-1"><span>Kembalian</span><strong id="changeText">Rp0</strong></div>
+<div class="d-flex justify-content-between mb-3"><span>Sisa belum dibayar</span><strong id="shortageText">Rp0</strong></div>
+<input type="hidden" name="cart_json" id="cartJson">
+<button class="btn btn-primary btn-lg w-100" type="submit">Simpan Pesanan & Cetak Struk</button>
+</div></form>
+</div>
+<div class="card p-3 mt-4">
+<h5>Tambah Menu Manual</h5><form id="addProduct" class="row g-2"><div class="col-md-6"><input class="form-control" name="name" placeholder="Nama menu" required></div><div class="col-md-4"><input class="form-control" name="price" type="number" min="0" placeholder="Harga (Rp)" required></div><div class="col-md-2"><button class="btn btn-outline-primary w-100">Tambah</button></div></form><div id="productMessage" class="small mt-2"></div><div class="small text-secondary mt-2">Setelah menu ditambahkan, muat ulang halaman agar menu muncul di daftar.</div>
+</div>
+</div>
+<div class="col-lg-5">
+<div class="card p-3 p-md-4"><h5>Pesanan Terbaru</h5>
+{% if recent_orders %}<div class="list-group list-group-flush">{% for o in recent_orders %}<a class="list-group-item px-0 d-flex justify-content-between align-items-center" href="/receipt/{{ o.id }}"><div><strong>{{ o.queue_name }}</strong><div class="small text-secondary">{{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</div></div><div class="text-end"><div>{{ o.total|rupiah }}</div><span class="badge {{ 'text-bg-success' if o.payment_status=='LUNAS' else 'text-bg-warning' }}">{{ o.payment_status }}</span></div></a>{% endfor %}</div>{% else %}<p class="text-secondary">Belum ada pesanan.</p>{% endif %}
+</div>
+<div class="alert alert-light border mt-3 small"><strong>Catatan:</strong> Struk memiliki dua bagian: satu untuk pelanggan dan satu untuk chef/dapur. Tekan tombol cetak pada halaman struk.</div>
+</div>
+</div>
+<script>
+const rupiah=n=>'Rp'+Math.max(0,Number(n)||0).toLocaleString('id-ID');
+function calc(){
+ let total=0,cart=[];
+ document.querySelectorAll('.qty').forEach(el=>{let q=Math.max(0,Math.min(99,parseInt(el.value||'0')));el.value=q;if(q){total+=q*Number(el.dataset.price);cart.push({product_id:Number(el.dataset.id),quantity:q});}});
+ const paid=Math.max(0,Number(document.getElementById('payment').value||0));
+ document.getElementById('totalText').textContent=rupiah(total);
+ document.getElementById('changeText').textContent=rupiah(Math.max(0,paid-total));
+ document.getElementById('shortageText').textContent=rupiah(Math.max(0,total-paid));
+ document.getElementById('cartJson').value=JSON.stringify(cart);
+}
+document.querySelectorAll('.qty').forEach(el=>el.addEventListener('input',calc));
+document.querySelectorAll('.qty-plus').forEach(b=>b.addEventListener('click',()=>{let e=document.querySelector('.qty[data-id="'+b.dataset.id+'"]');e.value=Math.min(99,Number(e.value||0)+1);calc();}));
+document.querySelectorAll('.qty-minus').forEach(b=>b.addEventListener('click',()=>{let e=document.querySelector('.qty[data-id="'+b.dataset.id+'"]');e.value=Math.max(0,Number(e.value||0)-1);calc();}));
+document.getElementById('payment').addEventListener('input',calc);
+document.getElementById('orderForm').addEventListener('submit',e=>{calc();if(!JSON.parse(document.getElementById('cartJson').value||'[]').length){e.preventDefault();alert('Pilih minimal satu menu.');}});
+document.getElementById('addProduct').addEventListener('submit',async e=>{e.preventDefault();let f=new FormData(e.target);let msg=document.getElementById('productMessage');try{let r=await fetch('/api/products',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.get('name'),price:Number(f.get('price'))})});let d=await r.json();if(!r.ok)throw new Error(d.error||'Gagal menambah menu');msg.className='small mt-2 text-success';msg.textContent='Menu '+d.name+' berhasil ditambahkan. Muat ulang halaman untuk menggunakannya.';e.target.reset();}catch(err){msg.className='small mt-2 text-danger';msg.textContent=err.message;}});
+calc();
+</script>
+{% endblock %}
