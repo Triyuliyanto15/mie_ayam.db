@@ -1,21 +1,39 @@
+
 import os
-import json
-from datetime import datetime, date
-from decimal import Decimal
-from flask import Flask, render_template, request, jsonify, redirect, url_for, abort
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy.pool import NullPool
 from dotenv import load_dotenv
 
 load_dotenv()
+
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "ganti-secret-key-untuk-produksi")
-database_url = os.getenv("DATABASE_URL", "sqlite:///mie_ayam.db")
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "local-dev-only")
+
+database_url = os.getenv("DATABASE_URL")
+
+if not database_url:
+    if os.getenv("VERCEL"):
+        raise RuntimeError("DATABASE_URL belum diatur di Vercel")
+    database_url = "sqlite:///mie_ayam.db"
+
 if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+    database_url = database_url.replace(
+        "postgres://", "postgresql://", 1
+    )
+
+engine_options = {"pool_pre_ping": True}
+
+# Supabase transaction pooler (port 6543)
+if "pooler.supabase.com:6543" in database_url:
+    engine_options["poolclass"] = NullPool
+    engine_options["connect_args"] = {"sslmode": "require"}
+
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options
+
 db = SQLAlchemy(app)
+
 
 class Product(db.Model):
     __tablename__ = "products"
