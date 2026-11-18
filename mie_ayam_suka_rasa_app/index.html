@@ -146,6 +146,7 @@
 
   <!-- ANTREAN -->
   <section id="viewAntrean" class="hide">
+    <p class="muted" id="antreanDate" style="margin:0 0 10px"></p>
     <div class="stats">
       <div class="stat"><span class="muted">Pesanan hari ini</span><b id="stCount">0</b></div>
       <div class="stat"><span class="muted">Menunggu</span><b id="stWait">0</b></div>
@@ -160,24 +161,36 @@
   <section id="viewLaporan" class="hide">
     <div class="card">
       <h2>Laporan Bulanan</h2>
-      <label for="rmonth">Pilih bulan</label>
-      <input id="rmonth" type="month">
+      <div class="row">
+        <div><label for="rmonth">Pilih bulan</label><input id="rmonth" type="month"></div>
+        <div><label for="rprod">Tampilkan menu</label><select id="rprod"><option value="">Semua menu</option></select></div>
+      </div>
     </div>
     <div class="stats">
-      <div class="stat"><span class="muted">Omzet (lunas)</span><b id="rRev">Rp 0</b></div>
-      <div class="stat"><span class="muted">Jumlah pesanan</span><b id="rCount">0</b></div>
-      <div class="stat"><span class="muted">Rata-rata per hari buka</span><b id="rAvg">Rp 0</b></div>
+      <div class="stat"><span class="muted" id="rL1">Omzet (lunas)</span><b id="rRev">Rp 0</b></div>
+      <div class="stat"><span class="muted" id="rL2">Jumlah pesanan</span><b id="rCount">0</b></div>
+      <div class="stat"><span class="muted">Rata-rata per hari buka</span><b id="rAvg">-</b></div>
       <div class="stat"><span class="muted">Hari terbaik</span><b id="rBest">-</b></div>
     </div>
     <div class="card">
-      <h2 id="chartTitle">Omzet per hari</h2>
+      <h2 id="chartTitle">Per hari</h2>
       <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>Total terjual per menu (sebulan)</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Menu</th><th>Terjual</th><th>Omzet (lunas)</th></tr></thead>
+          <tbody id="rpRows"></tbody>
+          <tfoot id="rpFoot"></tfoot>
+        </table>
+      </div>
     </div>
     <div class="card">
       <h2>Rincian per hari</h2>
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Tanggal</th><th>Pesanan</th><th>Omzet (lunas)</th></tr></thead>
+          <thead><tr><th>Tanggal</th><th>Pesanan</th><th>Menu terjual</th><th>Omzet (lunas)</th></tr></thead>
           <tbody id="rRows"></tbody>
           <tfoot id="rFoot"></tfoot>
         </table>
@@ -201,7 +214,13 @@
         <div><label for="pstock">Stok (catatan)</label><input id="pstock" type="number" min="0" value="0"></div>
       </div>
       <label for="pdesc">Deskripsi</label><textarea id="pdesc" rows="2"></textarea>
-      <label for="pimg">URL gambar (opsional)</label><input id="pimg" type="url" placeholder="https://...">
+      <label for="pfile">Foto produk (opsional, JPG/PNG)</label>
+      <input id="pfile" type="file" accept="image/*">
+      <input type="hidden" id="pimg">
+      <div id="pimgBox" class="hide" style="margin-top:8px">
+        <img id="ppreview" alt="Pratinjau foto" style="width:140px;height:100px;object-fit:cover;border-radius:10px;display:block">
+        <button class="btn ghost sm" id="btnImgDel" type="button" style="margin-top:6px">Hapus gambar</button>
+      </div>
       <label><input id="pactive" type="checkbox" checked style="width:auto"> Tampilkan di menu (aktif)</label>
       <div class="actions">
         <button class="btn" id="btnSave">Simpan</button>
@@ -244,6 +263,12 @@ const timeWIB = (ts) => {
   if (!ts) return "";
   const s = /Z|[+-]\d\d:?\d\d$/.test(ts) ? ts : ts + "Z";
   return new Date(s).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
+};
+
+const dateTimeWIB = (ts) => {
+  if (!ts) return "";
+  const s = /Z|[+-]\d\d:?\d\d$/.test(ts) ? ts : ts + "Z";
+  return new Date(s).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) + " WIB";
 };
 
 /* ---------- INPUT NOMINAL (pemisah ribuan otomatis) ---------- */
@@ -418,6 +443,7 @@ function renderChips() {
 }
 async function loadOrders() {
   renderChips();
+  $("antreanDate").textContent = "Hari ini: " + new Date().toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const { data, error } = await db.from("orders")
     .select("id,queue_name,queue_number,customer_name,note,total,payment_status,payment_received,status,created_at,order_items(product_name,unit_price,quantity,subtotal)")
     .eq("order_date", todayWIB()).order("queue_number", { ascending: true });
@@ -436,7 +462,7 @@ function orderCard(o) {
   const card = h("div", { class: "order" + (o.status === "SELESAI" ? " done-o" : "") + (o.status === "BATAL" ? " cancel" : "") },
     h("div", { style: "display:flex;justify-content:space-between;align-items:center" },
       h("span", { class: "q" }, o.queue_name || ("#" + o.id)),
-      h("span", { class: "muted" }, timeWIB(o.created_at))),
+      h("span", { class: "muted" }, dateTimeWIB(o.created_at))),
     o.customer_name ? h("div", {}, "👤 " + o.customer_name) : null,
     items,
     o.note ? h("div", { class: "muted" }, "Catatan: " + o.note) : null,
@@ -480,21 +506,22 @@ async function setStatus(o, status) {
 
 /* ---------- LAPORAN BULANAN ---------- */
 const short = (n) => n >= 1e6 ? (n / 1e6).toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "jt" : n >= 1e3 ? Math.round(n / 1e3) + "rb" : String(Math.round(n));
-function drawChart(days) {
+function drawChart(days, axis, tip) {
   const W = 720, H = 240, L = 40, B = 22, T = 10, R = 6, pw = W - L - R, ph = H - T - B;
-  const max = Math.max(...days.map((x) => x.rev), 1), bw = pw / days.length;
-  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Grafik omzet per hari">`;
+  const max = Math.max(...days.map((x) => x.v), 1), bw = pw / days.length;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Grafik per hari">`;
   for (let i = 0; i <= 4; i++) {
     const y = T + ph - ph * i / 4;
-    s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L - 4}" y="${y + 3}" text-anchor="end" font-size="9" fill="var(--muted)">${short(max * i / 4)}</text>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L - 4}" y="${y + 3}" text-anchor="end" font-size="9" fill="var(--muted)">${axis(max * i / 4)}</text>`;
   }
   days.forEach((x, i) => {
-    const bh = ph * x.rev / max, bx = L + i * bw;
-    s += `<rect x="${bx + 1}" y="${T + ph - bh}" width="${Math.max(bw - 2, 1)}" height="${bh}" rx="2" fill="var(--brand)"><title>Tgl ${x.d}: ${rupiah(x.rev)} (${x.n} pesanan)</title></rect>`;
+    const bh = ph * x.v / max, bx = L + i * bw;
+    s += `<rect x="${bx + 1}" y="${T + ph - bh}" width="${Math.max(bw - 2, 1)}" height="${bh}" rx="2" fill="var(--brand)"><title>Tgl ${x.d}: ${tip(x)}</title></rect>`;
     s += `<text x="${bx + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="9" fill="var(--muted)">${x.d}</text>`;
   });
   return s + "</svg>";
 }
+const nf = (n) => Number(n).toLocaleString("id-ID", { maximumFractionDigits: 1 });
 async function loadReport() {
   const ym = $("rmonth").value || todayWIB().slice(0, 7);
   $("rmonth").value = ym;
@@ -502,38 +529,117 @@ async function loadReport() {
   const from = ym + "-01", to = ym + "-" + String(nd).padStart(2, "0");
   let all = [], start = 0;
   for (;;) {
-    const { data, error } = await db.from("orders").select("order_date,total,payment_status,status")
+    const { data, error } = await db.from("orders").select("order_date,total,payment_status,status,order_items(product_name,quantity,subtotal)")
       .gte("order_date", from).lte("order_date", to).order("order_date").order("id").range(start, start + 999);
     if (error) return show("Gagal memuat laporan: " + error.message, "err");
     all = all.concat(data);
     if (data.length < 1000) break;
     start += 1000;
   }
-  const days = Array.from({ length: nd }, (_, i) => ({ d: i + 1, n: 0, rev: 0 }));
+  const days = Array.from({ length: nd }, (_, i) => ({ d: i + 1, n: 0, rev: 0, it: new Map() }));
+  const tot = new Map();
   for (const o of all) {
     if (o.status === "BATAL") continue;
     const x = days[parseInt(o.order_date.slice(8, 10), 10) - 1];
     if (!x) continue;
+    const lunas = o.payment_status === "LUNAS";
     x.n++;
-    if (o.payment_status === "LUNAS") x.rev += o.total;
+    if (lunas) x.rev += o.total;
+    const seen = new Set();
+    for (const i of o.order_items || []) {
+      for (const mp of [x.it, tot]) {
+        const r = mp.get(i.product_name) || { q: 0, rev: 0, o: 0 };
+        r.q += i.quantity;
+        if (lunas) r.rev += i.subtotal;
+        if (!seen.has(i.product_name)) r.o++;
+        mp.set(i.product_name, r);
+      }
+      seen.add(i.product_name);
+    }
   }
-  const rev = days.reduce((s, x) => s + x.rev, 0), cnt = days.reduce((s, x) => s + x.n, 0);
-  const active = days.filter((x) => x.n > 0), best = days.reduce((a, b) => (b.rev > a.rev ? b : a), days[0]);
+  // pilihan menu
+  const names = [...tot.keys()].sort((a, b) => a.localeCompare(b, "id"));
+  const sel = $("rprod"), cur = sel.value;
+  sel.replaceChildren(h("option", { value: "" }, "Semua menu"), ...names.map((n) => h("option", { value: n }, n)));
+  sel.value = names.includes(cur) ? cur : "";
+  const p = sel.value;
+  for (const x of days) {
+    const r = p ? x.it.get(p) : null;
+    x.v = p ? (r ? r.q : 0) : x.rev;
+    x.pr = p ? (r ? r.rev : 0) : x.rev;
+    x.pn = p ? (r ? r.o : 0) : x.n;
+  }
+  const act = days.filter((x) => x.pn > 0);
+  const sumV = days.reduce((s, x) => s + x.v, 0), sumRev = days.reduce((s, x) => s + x.pr, 0), sumN = days.reduce((s, x) => s + x.pn, 0);
+  const best = days.reduce((a, b) => (b.v > a.v ? b : a), days[0]);
   const bulan = new Date(y, m - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" });
-  $("chartTitle").textContent = "Omzet per hari — " + bulan;
-  $("rRev").textContent = rupiah(rev);
-  $("rCount").textContent = cnt.toLocaleString("id-ID");
-  $("rAvg").textContent = rupiah(active.length ? Math.round(rev / active.length) : 0);
-  $("rBest").textContent = best.rev > 0 ? "Tgl " + best.d + " · " + rupiah(best.rev) : "-";
-  $("chart").innerHTML = drawChart(days);
-  $("rRows").replaceChildren(...active.map((x) => h("tr", {}, h("td", {}, x.d + " " + bulan), h("td", {}, x.n), h("td", {}, rupiah(x.rev)))));
-  $("rFoot").replaceChildren(...(active.length ? [h("tr", {}, h("td", {}, "Total"), h("td", {}, cnt.toLocaleString("id-ID")), h("td", {}, rupiah(rev)))] : []));
-  $("rEmpty").hidden = active.length > 0;
+  const totalQty = [...tot.values()].reduce((s, r) => s + r.q, 0);
+
+  $("rL1").textContent = p ? "Omzet " + p + " (lunas)" : "Omzet (lunas)";
+  $("rRev").textContent = rupiah(sumRev);
+  $("rL2").textContent = p ? p + " terjual (porsi)" : "Jumlah pesanan";
+  $("rCount").textContent = nf(p ? sumV : sumN);
+  $("rAvg").textContent = p ? (act.length ? nf(sumV / act.length) + " porsi" : "-") : rupiah(act.length ? Math.round(sumRev / act.length) : 0);
+  $("rBest").textContent = best.v > 0 ? "Tgl " + best.d + " · " + (p ? nf(best.v) + " porsi" : rupiah(best.v)) : "-";
+  $("chartTitle").textContent = (p ? p + " terjual per hari (porsi)" : "Omzet per hari") + " — " + bulan;
+  $("chart").innerHTML = drawChart(days, p ? (v) => String(Math.round(v)) : short,
+    p ? (x) => nf(x.v) + " porsi" : (x) => rupiah(x.rev) + " (" + x.n + " pesanan)");
+
+  // total per menu
+  const prods = [...tot.entries()].sort((a, b) => b[1].q - a[1].q);
+  $("rpRows").replaceChildren(...prods.map(([n, r]) => h("tr", { style: n === p ? "font-weight:800" : null }, h("td", {}, n), h("td", {}, nf(r.q) + " porsi"), h("td", {}, rupiah(r.rev)))));
+  $("rpFoot").replaceChildren(...(prods.length ? [h("tr", {}, h("td", {}, "Total"), h("td", {}, nf(totalQty) + " porsi"), h("td", {}, rupiah(prods.reduce((s, [, r]) => s + r.rev, 0))))] : []));
+
+  // rincian per hari
+  const wrap = { style: "white-space:normal;min-width:240px" };
+  $("rRows").replaceChildren(...act.map((x) => h("tr", {},
+    h("td", {}, x.d + " " + bulan), h("td", {}, x.pn),
+    h("td", wrap, p ? nf(x.v) + "× " + p : [...x.it].sort((a, b) => b[1].q - a[1].q).map(([n, r]) => r.q + "× " + n).join(", ")),
+    h("td", {}, rupiah(x.pr)))));
+  $("rFoot").replaceChildren(...(act.length ? [h("tr", {}, h("td", {}, "Total"), h("td", {}, nf(sumN)), h("td", wrap, nf(p ? sumV : totalQty) + " porsi"), h("td", {}, rupiah(sumRev)))] : []));
+  $("rEmpty").hidden = act.length > 0;
 }
 $("rmonth").onchange = loadReport;
+$("rprod").onchange = loadReport;
 
 /* ---------- PRODUK ---------- */
 money($("pprice"));
+function setPreview(url) {
+  $("pimgBox").classList.toggle("hide", !url);
+  if (url) $("ppreview").src = url;
+}
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 800 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob((b) => b ? res(b) : rej(new Error("Gagal memproses gambar.")), "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("File gambar tidak bisa dibaca. Pakai JPG atau PNG.")); };
+    img.src = url;
+  });
+}
+$("pfile").onchange = async () => {
+  const f = $("pfile").files[0];
+  if (!f) return;
+  const save = $("btnSave"); save.disabled = true;
+  show("Mengunggah gambar…", "ok");
+  try {
+    const blob = await shrink(f);
+    const path = Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+    const { error } = await db.storage.from("menu-images").upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
+    if (error) throw error;
+    const url = db.storage.from("menu-images").getPublicUrl(path).data.publicUrl;
+    $("pimg").value = url; setPreview(url);
+    show("Gambar terunggah. Klik Simpan untuk menyimpan produk.", "ok");
+  } catch (e) { show("Gagal mengunggah gambar: " + e.message, "err"); $("pfile").value = ""; }
+  save.disabled = false;
+};
+$("btnImgDel").onclick = () => { $("pimg").value = ""; $("pfile").value = ""; setPreview(""); };
 async function loadAdmin() {
   const { data, error } = await db.from("products").select("*").order("category").order("name");
   if (error) return show("Gagal memuat produk: " + error.message, "err");
@@ -547,13 +653,13 @@ async function loadAdmin() {
 }
 function resetForm() {
   $("pid").value = ""; $("pname").value = ""; $("pprice").value = ""; $("pcat").value = "Mie Ayam";
-  $("pstock").value = 0; $("pdesc").value = ""; $("pimg").value = ""; $("pactive").checked = true;
+  $("pstock").value = 0; $("pdesc").value = ""; $("pimg").value = ""; $("pfile").value = ""; setPreview(""); $("pactive").checked = true;
   $("formTitle").textContent = "Tambah Produk";
 }
 $("btnReset").onclick = resetForm;
 function editProduct(p) {
   $("pid").value = p.id; $("pname").value = p.name; $("pprice").value = Number(p.price).toLocaleString("id-ID"); $("pcat").value = p.category;
-  $("pstock").value = p.stock; $("pdesc").value = p.description || ""; $("pimg").value = p.image_url || "";
+  $("pstock").value = p.stock; $("pdesc").value = p.description || ""; $("pimg").value = p.image_url || ""; $("pfile").value = ""; setPreview(p.image_url);
   $("pactive").checked = p.active; $("formTitle").textContent = "Edit Produk";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
