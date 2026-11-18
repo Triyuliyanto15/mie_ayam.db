@@ -48,6 +48,7 @@
   .cartline{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
   .qty{display:flex;align-items:center;gap:6px} .qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:1.1rem;cursor:pointer}
   .total{display:flex;justify-content:space-between;font-size:1.2rem;font-weight:800;margin:12px 0}
+  .total.sub{font-size:1rem;margin:8px 0}
   .done{border:2px solid var(--ok);text-align:center}
   .bignum{font-size:3.2rem;font-weight:900;color:var(--brand);line-height:1.1}
   .orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
@@ -62,6 +63,9 @@
   .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
   .stat b{display:block;font-size:1.2rem}
   .payrow{display:flex;gap:6px;margin-top:8px}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .chg{font-size:.85rem;margin-top:4px;font-weight:700}
+  tfoot td{font-weight:800}
 </style>
 </head>
 <body>
@@ -74,6 +78,7 @@
     <button id="tabMenu" class="on">Menu</button>
     <button id="tabKasir">Kasir</button>
     <button id="tabAntrean">Antrean</button>
+    <button id="tabLaporan">Laporan</button>
     <button id="tabProduk">Produk</button>
   </nav>
 
@@ -123,6 +128,10 @@
         <div id="cart"></div>
         <p class="muted" id="cartEmpty">Belum ada item. Ketuk menu di kiri.</p>
         <div class="total"><span>Total</span><span id="cartTotal">Rp 0</span></div>
+        <label for="cpaid">Uang diterima (opsional)</label>
+        <input id="cpaid" placeholder="mis. 50.000">
+        <div class="quick" id="quick"></div>
+        <div class="total sub"><span>Kembalian</span><span id="cChange">-</span></div>
         <label for="cname">Nama customer (opsional)</label>
         <input id="cname" maxlength="60">
         <label for="cnote">Catatan (opsional)</label>
@@ -147,6 +156,36 @@
     <p class="muted" id="ordersEmpty" hidden>Belum ada pesanan.</p>
   </section>
 
+  <!-- LAPORAN -->
+  <section id="viewLaporan" class="hide">
+    <div class="card">
+      <h2>Laporan Bulanan</h2>
+      <label for="rmonth">Pilih bulan</label>
+      <input id="rmonth" type="month">
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="muted">Omzet (lunas)</span><b id="rRev">Rp 0</b></div>
+      <div class="stat"><span class="muted">Jumlah pesanan</span><b id="rCount">0</b></div>
+      <div class="stat"><span class="muted">Rata-rata per hari buka</span><b id="rAvg">Rp 0</b></div>
+      <div class="stat"><span class="muted">Hari terbaik</span><b id="rBest">-</b></div>
+    </div>
+    <div class="card">
+      <h2 id="chartTitle">Omzet per hari</h2>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>Rincian per hari</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Pesanan</th><th>Omzet (lunas)</th></tr></thead>
+          <tbody id="rRows"></tbody>
+          <tfoot id="rFoot"></tfoot>
+        </table>
+      </div>
+      <p class="muted" id="rEmpty" hidden>Belum ada pesanan di bulan ini.</p>
+    </div>
+  </section>
+
   <!-- PRODUK -->
   <section id="viewProduk" class="hide">
     <div class="card">
@@ -154,7 +193,7 @@
       <input type="hidden" id="pid">
       <div class="row">
         <div><label for="pname">Nama produk</label><input id="pname" maxlength="100"></div>
-        <div><label for="pprice">Harga (Rp)</label><input id="pprice" type="number" min="0" step="500"></div>
+        <div><label for="pprice">Harga (Rp)</label><input id="pprice" placeholder="mis. 15.000"></div>
       </div>
       <div class="row">
         <div><label for="pcat">Kategori</label>
@@ -207,7 +246,20 @@ const timeWIB = (ts) => {
   return new Date(s).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
 };
 
-let isAdmin = false, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null;
+/* ---------- INPUT NOMINAL (pemisah ribuan otomatis) ---------- */
+const digits = (s) => String(s || "").replace(/\D/g, "").slice(0, 10);
+const numOf = (el) => parseInt(digits(el.value), 10) || 0;
+function money(el, cb) {
+  el.setAttribute("inputmode", "numeric");
+  el.setAttribute("autocomplete", "off");
+  el.addEventListener("input", () => {
+    const d = digits(el.value);
+    el.value = d ? Number(d).toLocaleString("id-ID") : "";
+    if (cb) cb();
+  });
+}
+
+let isAdmin = false, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null, cartTotal = 0;
 
 function show(text, type) {
   const m = $("msg");
@@ -219,8 +271,8 @@ function show(text, type) {
 }
 
 /* ---------- NAVIGASI ---------- */
-const views = { menu: "viewMenu", kasir: "viewKasir", antrean: "viewAntrean", produk: "viewProduk" };
-const tabs = { menu: "tabMenu", kasir: "tabKasir", antrean: "tabAntrean", produk: "tabProduk" };
+const views = { menu: "viewMenu", kasir: "viewKasir", antrean: "viewAntrean", laporan: "viewLaporan", produk: "viewProduk" };
+const tabs = { menu: "tabMenu", kasir: "tabKasir", antrean: "tabAntrean", laporan: "tabLaporan", produk: "tabProduk" };
 async function tab(name) {
   currentTab = name;
   clearInterval(refreshTimer);
@@ -235,6 +287,7 @@ async function tab(name) {
   $(views[name]).classList.remove("hide");
   if (name === "kasir") loadPos();
   if (name === "antrean") { loadOrders(); refreshTimer = setInterval(loadOrders, 15000); }
+  if (name === "laporan") loadReport();
   if (name === "produk") loadAdmin();
 }
 for (const k of Object.keys(tabs)) $(tabs[k]).onclick = () => tab(k);
@@ -302,6 +355,13 @@ function addToCart(p) {
   if (line) line.qty = Math.min(99, line.qty + 1); else cart.set(p.id, { p, qty: 1 });
   renderCart();
 }
+function calcChange() {
+  const el = $("cChange"), has = $("cpaid").value !== "", paid = numOf($("cpaid"));
+  if (!has) { el.textContent = "-"; el.style.color = ""; }
+  else if (paid < cartTotal) { el.textContent = "Kurang " + rupiah(cartTotal - paid); el.style.color = "var(--bad)"; }
+  else { el.textContent = rupiah(paid - cartTotal); el.style.color = "var(--ok)"; }
+  $("btnOrder").disabled = cart.size === 0 || (has && paid < cartTotal);
+}
 function renderCart() {
   const box = $("cart"); box.replaceChildren();
   let total = 0;
@@ -315,23 +375,38 @@ function renderCart() {
         h("button", { type: "button", onclick: () => { const l = cart.get(id); l.qty = Math.min(99, l.qty + 1); renderCart(); } }, "+")),
       h("button", { class: "btn bad sm", type: "button", onclick: () => { cart.delete(id); renderCart(); } }, "✕")));
   }
+  cartTotal = total;
   $("cartEmpty").hidden = cart.size > 0;
   $("cartTotal").textContent = rupiah(total);
-  $("btnOrder").disabled = cart.size === 0;
+  calcChange();
 }
-$("btnClear").onclick = () => { cart.clear(); renderCart(); };
+money($("cpaid"), calcChange);
+$("quick").replaceChildren(
+  h("button", { class: "btn ghost sm", type: "button", onclick: () => { $("cpaid").value = cartTotal ? cartTotal.toLocaleString("id-ID") : ""; calcChange(); } }, "Uang pas"),
+  ...[20000, 50000, 100000].map((n) => h("button", { class: "btn ghost sm", type: "button", onclick: () => { $("cpaid").value = n.toLocaleString("id-ID"); calcChange(); } }, n.toLocaleString("id-ID"))));
+$("btnClear").onclick = () => { cart.clear(); $("cpaid").value = ""; renderCart(); };
 $("btnNext").onclick = () => $("doneBox").classList.add("hide");
 $("btnOrder").onclick = async () => {
   if (cart.size === 0) return;
+  const paid = $("cpaid").value !== "" ? numOf($("cpaid")) : 0;
+  if (paid && paid < cartTotal) return show("Uang diterima kurang dari total (" + rupiah(cartTotal) + ").", "err");
   const btn = $("btnOrder"); btn.disabled = true;
   const items = [...cart.values()].map((l) => ({ product_id: l.p.id, qty: l.qty }));
   const { data, error } = await db.rpc("create_order", { p_items: items, p_customer: $("cname").value, p_note: $("cnote").value });
   if (error) { show("Gagal menyimpan pesanan: " + error.message, "err"); btn.disabled = false; return; }
   const lines = [...cart.values()].map((l) => l.qty + "× " + l.p.name).join(", ");
+  let payInfo = "";
+  if (paid) {
+    let q = db.from("orders").update({ payment_status: "LUNAS", payment_received: paid });
+    q = data.id ? q.eq("id", data.id) : q.eq("queue_name", data.queue_name).eq("order_date", todayWIB());
+    const { error: e2 } = await q;
+    payInfo = e2 ? " — Pembayaran belum tersimpan, catat lewat tab Antrean."
+                 : " — Diterima " + rupiah(paid) + ", Kembalian " + rupiah(paid - data.total);
+  }
   $("doneQ").textContent = data.queue_name;
-  $("doneInfo").textContent = lines + " — Total " + rupiah(data.total);
+  $("doneInfo").textContent = lines + " — Total " + rupiah(data.total) + payInfo;
   $("doneBox").classList.remove("hide");
-  cart.clear(); $("cname").value = ""; $("cnote").value = ""; renderCart();
+  cart.clear(); $("cname").value = ""; $("cnote").value = ""; $("cpaid").value = ""; renderCart();
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
@@ -372,10 +447,17 @@ function orderCard(o) {
       h("span", { class: "tag " + (paid ? "on" : "off") }, paid ? "LUNAS" : "BELUM LUNAS")));
   if (paid) card.append(h("div", { class: "muted" }, "Diterima " + rupiah(o.payment_received) + " · Kembali " + rupiah(Math.max(0, o.payment_received - o.total))));
   if (!paid && o.status !== "BATAL") {
-    const inp = h("input", { type: "number", min: "0", step: "500", placeholder: "Uang diterima", inputmode: "numeric" });
+    const inp = h("input", { type: "text", placeholder: "Uang diterima" });
+    const chg = h("div", { class: "chg muted" });
+    money(inp, () => {
+      if (!inp.value) { chg.textContent = ""; return; }
+      const v = numOf(inp);
+      chg.textContent = v < o.total ? "Kurang " + rupiah(o.total - v) : "Kembalian " + rupiah(v - o.total);
+      chg.style.color = v < o.total ? "var(--bad)" : "var(--ok)";
+    });
     card.append(h("div", { class: "payrow" }, inp,
-      h("button", { class: "btn sm", type: "button", onclick: () => payOrder(o, parseInt(inp.value, 10)) }, "Bayar"),
-      h("button", { class: "btn ghost sm", type: "button", onclick: () => payOrder(o, o.total) }, "Pas")));
+      h("button", { class: "btn sm", type: "button", onclick: () => payOrder(o, numOf(inp)) }, "Bayar"),
+      h("button", { class: "btn ghost sm", type: "button", onclick: () => payOrder(o, o.total) }, "Pas")), chg);
   }
   if (o.status === "MENUNGGU") {
     card.append(h("div", { class: "actions" },
@@ -396,7 +478,62 @@ async function setStatus(o, status) {
   loadOrders();
 }
 
+/* ---------- LAPORAN BULANAN ---------- */
+const short = (n) => n >= 1e6 ? (n / 1e6).toLocaleString("id-ID", { maximumFractionDigits: 1 }) + "jt" : n >= 1e3 ? Math.round(n / 1e3) + "rb" : String(Math.round(n));
+function drawChart(days) {
+  const W = 720, H = 240, L = 40, B = 22, T = 10, R = 6, pw = W - L - R, ph = H - T - B;
+  const max = Math.max(...days.map((x) => x.rev), 1), bw = pw / days.length;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img" aria-label="Grafik omzet per hari">`;
+  for (let i = 0; i <= 4; i++) {
+    const y = T + ph - ph * i / 4;
+    s += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L - 4}" y="${y + 3}" text-anchor="end" font-size="9" fill="var(--muted)">${short(max * i / 4)}</text>`;
+  }
+  days.forEach((x, i) => {
+    const bh = ph * x.rev / max, bx = L + i * bw;
+    s += `<rect x="${bx + 1}" y="${T + ph - bh}" width="${Math.max(bw - 2, 1)}" height="${bh}" rx="2" fill="var(--brand)"><title>Tgl ${x.d}: ${rupiah(x.rev)} (${x.n} pesanan)</title></rect>`;
+    s += `<text x="${bx + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="9" fill="var(--muted)">${x.d}</text>`;
+  });
+  return s + "</svg>";
+}
+async function loadReport() {
+  const ym = $("rmonth").value || todayWIB().slice(0, 7);
+  $("rmonth").value = ym;
+  const [y, m] = ym.split("-").map(Number), nd = new Date(y, m, 0).getDate();
+  const from = ym + "-01", to = ym + "-" + String(nd).padStart(2, "0");
+  let all = [], start = 0;
+  for (;;) {
+    const { data, error } = await db.from("orders").select("order_date,total,payment_status,status")
+      .gte("order_date", from).lte("order_date", to).order("order_date").order("id").range(start, start + 999);
+    if (error) return show("Gagal memuat laporan: " + error.message, "err");
+    all = all.concat(data);
+    if (data.length < 1000) break;
+    start += 1000;
+  }
+  const days = Array.from({ length: nd }, (_, i) => ({ d: i + 1, n: 0, rev: 0 }));
+  for (const o of all) {
+    if (o.status === "BATAL") continue;
+    const x = days[parseInt(o.order_date.slice(8, 10), 10) - 1];
+    if (!x) continue;
+    x.n++;
+    if (o.payment_status === "LUNAS") x.rev += o.total;
+  }
+  const rev = days.reduce((s, x) => s + x.rev, 0), cnt = days.reduce((s, x) => s + x.n, 0);
+  const active = days.filter((x) => x.n > 0), best = days.reduce((a, b) => (b.rev > a.rev ? b : a), days[0]);
+  const bulan = new Date(y, m - 1, 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+  $("chartTitle").textContent = "Omzet per hari — " + bulan;
+  $("rRev").textContent = rupiah(rev);
+  $("rCount").textContent = cnt.toLocaleString("id-ID");
+  $("rAvg").textContent = rupiah(active.length ? Math.round(rev / active.length) : 0);
+  $("rBest").textContent = best.rev > 0 ? "Tgl " + best.d + " · " + rupiah(best.rev) : "-";
+  $("chart").innerHTML = drawChart(days);
+  $("rRows").replaceChildren(...active.map((x) => h("tr", {}, h("td", {}, x.d + " " + bulan), h("td", {}, x.n), h("td", {}, rupiah(x.rev)))));
+  $("rFoot").replaceChildren(...(active.length ? [h("tr", {}, h("td", {}, "Total"), h("td", {}, cnt.toLocaleString("id-ID")), h("td", {}, rupiah(rev)))] : []));
+  $("rEmpty").hidden = active.length > 0;
+}
+$("rmonth").onchange = loadReport;
+
 /* ---------- PRODUK ---------- */
+money($("pprice"));
 async function loadAdmin() {
   const { data, error } = await db.from("products").select("*").order("category").order("name");
   if (error) return show("Gagal memuat produk: " + error.message, "err");
@@ -415,13 +552,13 @@ function resetForm() {
 }
 $("btnReset").onclick = resetForm;
 function editProduct(p) {
-  $("pid").value = p.id; $("pname").value = p.name; $("pprice").value = p.price; $("pcat").value = p.category;
+  $("pid").value = p.id; $("pname").value = p.name; $("pprice").value = Number(p.price).toLocaleString("id-ID"); $("pcat").value = p.category;
   $("pstock").value = p.stock; $("pdesc").value = p.description || ""; $("pimg").value = p.image_url || "";
   $("pactive").checked = p.active; $("formTitle").textContent = "Edit Produk";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $("btnSave").onclick = async () => {
-  const name = $("pname").value.trim(), price = parseInt($("pprice").value, 10), stock = parseInt($("pstock").value, 10) || 0;
+  const name = $("pname").value.trim(), price = parseInt(digits($("pprice").value), 10), stock = parseInt($("pstock").value, 10) || 0;
   if (!name) return show("Nama produk wajib diisi.", "err");
   if (!Number.isInteger(price) || price < 0) return show("Harga harus angka 0 atau lebih.", "err");
   const row = { name, price, stock, category: $("pcat").value, description: $("pdesc").value.trim() || null,
