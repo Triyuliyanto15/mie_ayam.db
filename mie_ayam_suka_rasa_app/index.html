@@ -3,56 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard Mie Ayam Suka Rasa</title>
+<title>Kasir Mie Ayam Suka Rasa</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍜</text></svg>">
 <style>
-  :root{--bg:#fff8ee;--card:#fff;--ink:#2b1d12;--muted:#7a6a5c;--brand:#d9480f;--brand-d:#b23a0a;--line:#ecdcc8;--ok:#2f9e44;--bad:#c92a2a}
+  :root{--bg:#fff8ee;--card:#fff;--ink:#2b1d12;--muted:#7a6a5c;--brand:#d9480f;--brand-d:#b23a0a;--line:#ecdcc8;--ok:#2f9e44;--bad:#c92a2a;--warn:#e67700}
   @media (prefers-color-scheme:dark){:root{--bg:#1c130c;--card:#271b12;--ink:#f6e9da;--muted:#b9a794;--line:#4a3626}}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-  header{background:var(--brand);color:#fff;padding:18px 16px}
-  header h1{margin:0;font-size:1.3rem} header p{margin:2px 0 0;opacity:.9;font-size:.9rem}
-  main{max-width:960px;margin:0 auto;padding:16px}
-  nav{display:flex;gap:8px;margin-bottom:16px}
-  nav button{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font-weight:600;cursor:pointer}
+  header{background:var(--brand);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  header h1{margin:0;font-size:1.2rem} header small{opacity:.9}
+  main{max-width:1040px;margin:0 auto;padding:14px}
+  nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  nav button{flex:1;min-width:90px;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font-weight:600;cursor:pointer}
   nav button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .card h2{margin:0 0 10px;font-size:1.05rem}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
   .item{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-  .item .img{height:110px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:2.4rem}
+  .item .img{height:90px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:2.2rem}
   .item .img img{width:100%;height:100%;object-fit:cover}
-  .item .body{padding:12px}
-  .item h3{margin:0 0 4px;font-size:1rem} .muted{color:var(--muted);font-size:.85rem}
-  .price{color:var(--brand);font-weight:700;margin-top:6px}
-  label{display:block;font-size:.85rem;margin:10px 0 4px;color:var(--muted)}
+  .item .body{padding:10px}
+  .item h3{margin:0 0 2px;font-size:.95rem} .muted{color:var(--muted);font-size:.82rem}
+  .price{color:var(--brand);font-weight:700;margin-top:4px}
+  .pick{cursor:pointer;text-align:left;font:inherit;color:inherit;padding:0}
+  .pick:hover{border-color:var(--brand)} .pick:active{transform:scale(.98)}
+  label{display:block;font-size:.82rem;margin:10px 0 4px;color:var(--muted)}
   input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   @media(max-width:560px){.row{grid-template-columns:1fr}}
-  .btn{padding:10px 14px;border:0;border-radius:10px;background:var(--brand);color:#fff;font-weight:600;cursor:pointer}
-  .btn:hover{background:var(--brand-d)} .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-  .btn.bad{background:var(--bad)} .btn.sm{padding:6px 10px;font-size:.8rem}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:10px 14px;border:0;border-radius:10px;background:var(--brand);color:#fff;font-weight:600;cursor:pointer;font:inherit;font-weight:600}
+  .btn:hover{background:var(--brand-d)} .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.ok{background:var(--ok)} .btn.bad{background:var(--bad)} .btn.sm{padding:6px 10px;font-size:.8rem}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   .tablewrap{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.9rem}
   th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-  .tag{padding:2px 8px;border-radius:99px;font-size:.75rem;font-weight:600}
-  .tag.on{background:#d3f9d8;color:#1b6b2e} .tag.off{background:#ffe3e3;color:#8f1d1d}
+  .tag{padding:2px 8px;border-radius:99px;font-size:.75rem;font-weight:700;display:inline-block}
+  .tag.on{background:#d3f9d8;color:#1b6b2e} .tag.off{background:#ffe3e3;color:#8f1d1d} .tag.wait{background:#fff3bf;color:#7a5200}
   .msg{padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:.9rem}
   .msg.err{background:#ffe3e3;color:#8f1d1d} .msg.ok{background:#d3f9d8;color:#1b6b2e}
-  .hide{display:none}
+  .hide{display:none!important}
+  .kasir{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:start}
+  @media(max-width:820px){.kasir{grid-template-columns:1fr}}
+  .cartline{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .qty{display:flex;align-items:center;gap:6px} .qty button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:1.1rem;cursor:pointer}
+  .total{display:flex;justify-content:space-between;font-size:1.2rem;font-weight:800;margin:12px 0}
+  .done{border:2px solid var(--ok);text-align:center}
+  .bignum{font-size:3.2rem;font-weight:900;color:var(--brand);line-height:1.1}
+  .orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+  .order{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--card)}
+  .order.done-o{opacity:.7} .order.cancel{opacity:.5}
+  .order .q{font-size:1.8rem;font-weight:900;color:var(--brand)}
+  .order ul{margin:8px 0;padding-left:18px} .order li{margin:2px 0}
+  .chips{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+  .chip{padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:.85rem}
+  .chip.on{background:var(--ink);color:var(--bg)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+  .stat b{display:block;font-size:1.2rem}
+  .payrow{display:flex;gap:6px;margin-top:8px}
 </style>
 </head>
 <body>
 <header>
-  <h1>🍜 Dashboard Mie Ayam Suka Rasa</h1>
-  <p>Kelola menu dan produk</p>
+  <h1>🍜 Kasir Mie Ayam Suka Rasa</h1>
+  <small id="who"></small>
 </header>
 <main>
   <nav>
     <button id="tabMenu" class="on">Menu</button>
-    <button id="tabAdmin">Admin</button>
+    <button id="tabKasir">Kasir</button>
+    <button id="tabAntrean">Antrean</button>
+    <button id="tabProduk">Produk</button>
   </nav>
 
-  <div id="msg"></div>
+  <div id="msg" hidden></div>
 
   <!-- MENU PUBLIK -->
   <section id="viewMenu">
@@ -60,10 +85,10 @@
     <p class="muted" id="menuEmpty" hidden>Belum ada produk aktif.</p>
   </section>
 
-  <!-- ADMIN -->
-  <section id="viewAdmin" class="hide">
-    <div id="loginBox" class="card">
-      <h2 style="margin-top:0">Masuk Admin</h2>
+  <!-- LOGIN -->
+  <section id="viewGate" class="hide">
+    <div class="card" style="max-width:420px;margin:0 auto">
+      <h2>Masuk Kasir/Admin</h2>
       <label for="email">Email</label>
       <input id="email" type="email" autocomplete="username">
       <label for="password">Password (min. 6 karakter)</label>
@@ -72,48 +97,85 @@
         <button class="btn" id="btnLogin">Masuk</button>
         <button class="btn ghost" id="btnSignup">Daftar</button>
       </div>
-      <p class="muted">Pengguna pertama yang masuk otomatis menjadi admin. Setelah itu akun lain tidak bisa mengubah produk.</p>
+      <p class="muted" id="gateNote">Pengguna pertama yang masuk otomatis menjadi admin. Akun lain tidak bisa membuat pesanan atau mengubah produk.</p>
+      <div class="actions"><button class="btn ghost sm hide" id="btnGateLogout">Keluar</button></div>
     </div>
+  </section>
 
-    <div id="adminBox" class="hide">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <strong id="who"></strong>
-          <button class="btn ghost sm" id="btnLogout">Keluar</button>
+  <!-- KASIR -->
+  <section id="viewKasir" class="hide">
+    <div id="doneBox" class="card done hide">
+      <div class="muted">Pesanan tersimpan. Nomor antrean:</div>
+      <div class="bignum" id="doneQ"></div>
+      <div id="doneInfo" style="margin:6px 0"></div>
+      <button class="btn" id="btnNext">Pesanan Baru</button>
+    </div>
+    <div class="kasir">
+      <div>
+        <div class="card">
+          <h2>Pilih Menu</h2>
+          <div class="grid" id="posGrid"></div>
+          <p class="muted" id="posEmpty" hidden>Belum ada produk aktif. Tambahkan di tab Produk.</p>
         </div>
       </div>
-
       <div class="card">
-        <h2 style="margin-top:0" id="formTitle">Tambah Produk</h2>
-        <input type="hidden" id="pid">
-        <div class="row">
-          <div><label for="pname">Nama produk</label><input id="pname" maxlength="100"></div>
-          <div><label for="pprice">Harga (Rp)</label><input id="pprice" type="number" min="0" step="500"></div>
-        </div>
-        <div class="row">
-          <div><label for="pcat">Kategori</label>
-            <select id="pcat">
-              <option>Mie Ayam</option><option>Minuman</option><option>Tambahan</option><option>Lainnya</option>
-            </select></div>
-          <div><label for="pstock">Stok</label><input id="pstock" type="number" min="0" value="0"></div>
-        </div>
-        <label for="pdesc">Deskripsi</label><textarea id="pdesc" rows="2"></textarea>
-        <label for="pimg">URL gambar (opsional)</label><input id="pimg" type="url" placeholder="https://...">
-        <label><input id="pactive" type="checkbox" checked style="width:auto"> Tampilkan di menu (aktif)</label>
+        <h2>Pesanan</h2>
+        <div id="cart"></div>
+        <p class="muted" id="cartEmpty">Belum ada item. Ketuk menu di kiri.</p>
+        <div class="total"><span>Total</span><span id="cartTotal">Rp 0</span></div>
+        <label for="cname">Nama customer (opsional)</label>
+        <input id="cname" maxlength="60">
+        <label for="cnote">Catatan (opsional)</label>
+        <input id="cnote" maxlength="120" placeholder="mis. tanpa sayur, pedas">
         <div class="actions">
-          <button class="btn" id="btnSave">Simpan</button>
-          <button class="btn ghost" id="btnReset">Batal</button>
+          <button class="btn ok" id="btnOrder" disabled>Simpan &amp; Beri Nomor Antrean</button>
+          <button class="btn ghost" id="btnClear">Kosongkan</button>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="card">
-        <h2 style="margin-top:0">Daftar Produk</h2>
-        <div class="tablewrap">
-          <table>
-            <thead><tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Status</th><th>Aksi</th></tr></thead>
-            <tbody id="rows"></tbody>
-          </table>
-        </div>
+  <!-- ANTREAN -->
+  <section id="viewAntrean" class="hide">
+    <div class="stats">
+      <div class="stat"><span class="muted">Pesanan hari ini</span><b id="stCount">0</b></div>
+      <div class="stat"><span class="muted">Menunggu</span><b id="stWait">0</b></div>
+      <div class="stat"><span class="muted">Pendapatan (lunas)</span><b id="stRev">Rp 0</b></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="orders" id="orders"></div>
+    <p class="muted" id="ordersEmpty" hidden>Belum ada pesanan.</p>
+  </section>
+
+  <!-- PRODUK -->
+  <section id="viewProduk" class="hide">
+    <div class="card">
+      <h2 id="formTitle">Tambah Produk</h2>
+      <input type="hidden" id="pid">
+      <div class="row">
+        <div><label for="pname">Nama produk</label><input id="pname" maxlength="100"></div>
+        <div><label for="pprice">Harga (Rp)</label><input id="pprice" type="number" min="0" step="500"></div>
+      </div>
+      <div class="row">
+        <div><label for="pcat">Kategori</label>
+          <select id="pcat"><option>Mie Ayam</option><option>Minuman</option><option>Tambahan</option><option>Lainnya</option></select></div>
+        <div><label for="pstock">Stok (catatan)</label><input id="pstock" type="number" min="0" value="0"></div>
+      </div>
+      <label for="pdesc">Deskripsi</label><textarea id="pdesc" rows="2"></textarea>
+      <label for="pimg">URL gambar (opsional)</label><input id="pimg" type="url" placeholder="https://...">
+      <label><input id="pactive" type="checkbox" checked style="width:auto"> Tampilkan di menu (aktif)</label>
+      <div class="actions">
+        <button class="btn" id="btnSave">Simpan</button>
+        <button class="btn ghost" id="btnReset">Batal</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Daftar Produk</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -128,101 +190,224 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const $ = (id) => document.getElementById(id);
 const rupiah = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
-let isAdmin = false;
+const h = (tag, props = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e[k] = v;
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) e.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return e;
+};
+const todayWIB = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+const timeWIB = (ts) => {
+  if (!ts) return "";
+  const s = /Z|[+-]\d\d:?\d\d$/.test(ts) ? ts : ts + "Z";
+  return new Date(s).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
+};
+
+let isAdmin = false, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null;
 
 function show(text, type) {
   const m = $("msg");
   m.className = "msg " + (type || "ok");
   m.textContent = text;
   m.hidden = !text;
-  if (text) setTimeout(() => { m.hidden = true; }, 5000);
+  clearTimeout(show.t);
+  if (text) show.t = setTimeout(() => { m.hidden = true; }, 6000);
 }
-function tab(name) {
-  $("viewMenu").classList.toggle("hide", name !== "menu");
-  $("viewAdmin").classList.toggle("hide", name !== "admin");
-  $("tabMenu").classList.toggle("on", name === "menu");
-  $("tabAdmin").classList.toggle("on", name === "admin");
-}
-$("tabMenu").onclick = () => { tab("menu"); loadMenu(); };
-$("tabAdmin").onclick = () => { tab("admin"); refreshAuth(); };
 
-/* ---------- MENU PUBLIK ---------- */
-async function loadMenu() {
-  const { data, error } = await db.from("products")
-    .select("id,name,price,category,description,image_url,stock")
-    .eq("active", true).order("category").order("name");
-  if (error) { show("Gagal memuat menu: " + error.message, "err"); return; }
-  const grid = $("menuGrid");
-  grid.replaceChildren();
-  $("menuEmpty").hidden = data.length > 0;
-  for (const p of data) {
-    const el = document.createElement("div"); el.className = "item";
-    const img = document.createElement("div"); img.className = "img";
-    if (p.image_url) { const i = document.createElement("img"); i.src = p.image_url; i.alt = p.name; i.loading = "lazy"; img.appendChild(i); }
-    else img.textContent = p.category === "Minuman" ? "🧋" : "🍜";
-    const body = document.createElement("div"); body.className = "body";
-    const h = document.createElement("h3"); h.textContent = p.name;
-    const c = document.createElement("div"); c.className = "muted"; c.textContent = p.category;
-    const d = document.createElement("div"); d.className = "muted"; d.textContent = p.description || "";
-    const pr = document.createElement("div"); pr.className = "price"; pr.textContent = rupiah(p.price);
-    body.append(h, c, d, pr);
-    el.append(img, body);
-    grid.appendChild(el);
+/* ---------- NAVIGASI ---------- */
+const views = { menu: "viewMenu", kasir: "viewKasir", antrean: "viewAntrean", produk: "viewProduk" };
+const tabs = { menu: "tabMenu", kasir: "tabKasir", antrean: "tabAntrean", produk: "tabProduk" };
+async function tab(name) {
+  currentTab = name;
+  clearInterval(refreshTimer);
+  for (const k of Object.keys(views)) {
+    $(tabs[k]).classList.toggle("on", k === name);
+    $(views[k]).classList.add("hide");
   }
+  $("viewGate").classList.add("hide");
+  if (name === "menu") { $(views.menu).classList.remove("hide"); loadMenu(); return; }
+  await refreshAuth();
+  if (!isAdmin) { $("viewGate").classList.remove("hide"); return; }
+  $(views[name]).classList.remove("hide");
+  if (name === "kasir") loadPos();
+  if (name === "antrean") { loadOrders(); refreshTimer = setInterval(loadOrders, 15000); }
+  if (name === "produk") loadAdmin();
 }
+for (const k of Object.keys(tabs)) $(tabs[k]).onclick = () => tab(k);
 
 /* ---------- AUTH ---------- */
 async function refreshAuth() {
   const { data: { session } } = await db.auth.getSession();
-  if (!session) { isAdmin = false; $("loginBox").classList.remove("hide"); $("adminBox").classList.add("hide"); return; }
+  isAdmin = false;
+  $("btnGateLogout").classList.toggle("hide", !session);
+  if (!session) { $("who").textContent = ""; $("gateNote").textContent = "Pengguna pertama yang masuk otomatis menjadi admin. Akun lain tidak bisa membuat pesanan atau mengubah produk."; return; }
   const { data: ok, error } = await db.rpc("claim_admin");
   if (error || !ok) {
-    isAdmin = false;
-    show("Akun ini bukan admin, sehingga tidak bisa mengubah produk.", "err");
-    $("loginBox").classList.add("hide"); $("adminBox").classList.remove("hide");
     $("who").textContent = session.user.email + " (bukan admin)";
-    $("rows").replaceChildren();
+    $("gateNote").textContent = "Akun ini bukan admin/kasir, jadi tidak bisa membuka halaman ini. Keluar lalu masuk dengan akun admin.";
     return;
   }
   isAdmin = true;
-  $("who").textContent = "Admin: " + session.user.email;
-  $("loginBox").classList.add("hide"); $("adminBox").classList.remove("hide");
-  loadAdmin();
+  $("who").textContent = "Kasir: " + session.user.email;
 }
 $("btnLogin").onclick = async () => {
   const { error } = await db.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
   if (error) return show("Gagal masuk: " + error.message, "err");
-  show("Berhasil masuk.", "ok"); refreshAuth();
+  show("Berhasil masuk.", "ok"); tab(currentTab);
 };
 $("btnSignup").onclick = async () => {
   const { data, error } = await db.auth.signUp({ email: $("email").value.trim(), password: $("password").value });
   if (error) return show("Gagal daftar: " + error.message, "err");
-  if (data.session) { show("Akun dibuat.", "ok"); refreshAuth(); }
-  else show("Akun dibuat. Cek email Anda untuk konfirmasi, lalu masuk.", "ok");
+  if (data.session) { show("Akun dibuat.", "ok"); tab(currentTab); }
+  else show("Akun dibuat. Cek email untuk konfirmasi, lalu masuk.", "ok");
 };
-$("btnLogout").onclick = async () => { await db.auth.signOut(); isAdmin = false; refreshAuth(); };
+$("btnGateLogout").onclick = async () => { await db.auth.signOut(); isAdmin = false; $("who").textContent = ""; tab(currentTab); };
 
-/* ---------- ADMIN CRUD ---------- */
+/* ---------- MENU PUBLIK ---------- */
+function productCard(p, onclick) {
+  const img = h("div", { class: "img" });
+  if (p.image_url) img.append(h("img", { src: p.image_url, alt: p.name, loading: "lazy" }));
+  else img.textContent = p.category === "Minuman" ? "🧋" : "🍜";
+  const body = h("div", { class: "body" },
+    h("h3", {}, p.name), h("div", { class: "muted" }, p.category),
+    p.description ? h("div", { class: "muted" }, p.description) : null,
+    h("div", { class: "price" }, rupiah(p.price)));
+  return h(onclick ? "button" : "div", { class: "item" + (onclick ? " pick" : ""), onclick, type: onclick ? "button" : null }, img, body);
+}
+async function fetchActive() {
+  const { data, error } = await db.from("products")
+    .select("id,name,price,category,description,image_url").eq("active", true).order("category").order("name");
+  if (error) { show("Gagal memuat menu: " + error.message, "err"); return []; }
+  return data;
+}
+async function loadMenu() {
+  const data = await fetchActive();
+  $("menuGrid").replaceChildren(...data.map((p) => productCard(p)));
+  $("menuEmpty").hidden = data.length > 0;
+}
+
+/* ---------- KASIR ---------- */
+async function loadPos() {
+  products = await fetchActive();
+  $("posGrid").replaceChildren(...products.map((p) => productCard(p, () => addToCart(p))));
+  $("posEmpty").hidden = products.length > 0;
+  renderCart();
+}
+function addToCart(p) {
+  const line = cart.get(p.id);
+  if (line) line.qty = Math.min(99, line.qty + 1); else cart.set(p.id, { p, qty: 1 });
+  renderCart();
+}
+function renderCart() {
+  const box = $("cart"); box.replaceChildren();
+  let total = 0;
+  for (const [id, { p, qty }] of cart) {
+    total += p.price * qty;
+    box.append(h("div", { class: "cartline" },
+      h("div", {}, h("div", {}, p.name), h("div", { class: "muted" }, rupiah(p.price) + " × " + qty + " = " + rupiah(p.price * qty))),
+      h("div", { class: "qty" },
+        h("button", { type: "button", onclick: () => { const l = cart.get(id); l.qty--; if (l.qty < 1) cart.delete(id); renderCart(); } }, "−"),
+        h("b", {}, qty),
+        h("button", { type: "button", onclick: () => { const l = cart.get(id); l.qty = Math.min(99, l.qty + 1); renderCart(); } }, "+")),
+      h("button", { class: "btn bad sm", type: "button", onclick: () => { cart.delete(id); renderCart(); } }, "✕")));
+  }
+  $("cartEmpty").hidden = cart.size > 0;
+  $("cartTotal").textContent = rupiah(total);
+  $("btnOrder").disabled = cart.size === 0;
+}
+$("btnClear").onclick = () => { cart.clear(); renderCart(); };
+$("btnNext").onclick = () => $("doneBox").classList.add("hide");
+$("btnOrder").onclick = async () => {
+  if (cart.size === 0) return;
+  const btn = $("btnOrder"); btn.disabled = true;
+  const items = [...cart.values()].map((l) => ({ product_id: l.p.id, qty: l.qty }));
+  const { data, error } = await db.rpc("create_order", { p_items: items, p_customer: $("cname").value, p_note: $("cnote").value });
+  if (error) { show("Gagal menyimpan pesanan: " + error.message, "err"); btn.disabled = false; return; }
+  const lines = [...cart.values()].map((l) => l.qty + "× " + l.p.name).join(", ");
+  $("doneQ").textContent = data.queue_name;
+  $("doneInfo").textContent = lines + " — Total " + rupiah(data.total);
+  $("doneBox").classList.remove("hide");
+  cart.clear(); $("cname").value = ""; $("cnote").value = ""; renderCart();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+/* ---------- ANTREAN ---------- */
+const FILTERS = [["MENUNGGU", "Menunggu"], ["SELESAI", "Selesai"], ["BATAL", "Batal"], ["SEMUA", "Semua"]];
+function renderChips() {
+  $("chips").replaceChildren(...FILTERS.map(([k, label]) =>
+    h("button", { type: "button", class: "chip" + (orderFilter === k ? " on" : ""), onclick: () => { orderFilter = k; loadOrders(); } }, label)));
+}
+async function loadOrders() {
+  renderChips();
+  const { data, error } = await db.from("orders")
+    .select("id,queue_name,queue_number,customer_name,note,total,payment_status,payment_received,status,created_at,order_items(product_name,unit_price,quantity,subtotal)")
+    .eq("order_date", todayWIB()).order("queue_number", { ascending: true });
+  if (error) return show("Gagal memuat antrean: " + error.message, "err");
+  const live = data.filter((o) => o.status !== "BATAL");
+  $("stCount").textContent = live.length;
+  $("stWait").textContent = data.filter((o) => o.status === "MENUNGGU").length;
+  $("stRev").textContent = rupiah(live.filter((o) => o.payment_status === "LUNAS").reduce((s, o) => s + o.total, 0));
+  const list = orderFilter === "SEMUA" ? data : data.filter((o) => o.status === orderFilter);
+  $("orders").replaceChildren(...list.map(orderCard));
+  $("ordersEmpty").hidden = list.length > 0;
+}
+function orderCard(o) {
+  const paid = o.payment_status === "LUNAS";
+  const items = h("ul", {}, (o.order_items || []).map((i) => h("li", {}, i.quantity + "× " + i.product_name + " — " + rupiah(i.subtotal))));
+  const card = h("div", { class: "order" + (o.status === "SELESAI" ? " done-o" : "") + (o.status === "BATAL" ? " cancel" : "") },
+    h("div", { style: "display:flex;justify-content:space-between;align-items:center" },
+      h("span", { class: "q" }, o.queue_name || ("#" + o.id)),
+      h("span", { class: "muted" }, timeWIB(o.created_at))),
+    o.customer_name ? h("div", {}, "👤 " + o.customer_name) : null,
+    items,
+    o.note ? h("div", { class: "muted" }, "Catatan: " + o.note) : null,
+    h("div", { style: "font-weight:800;margin-top:6px" }, "Total " + rupiah(o.total)),
+    h("div", { style: "margin-top:6px" },
+      h("span", { class: "tag " + (o.status === "MENUNGGU" ? "wait" : o.status === "SELESAI" ? "on" : "off") }, o.status),
+      " ",
+      h("span", { class: "tag " + (paid ? "on" : "off") }, paid ? "LUNAS" : "BELUM LUNAS")));
+  if (paid) card.append(h("div", { class: "muted" }, "Diterima " + rupiah(o.payment_received) + " · Kembali " + rupiah(Math.max(0, o.payment_received - o.total))));
+  if (!paid && o.status !== "BATAL") {
+    const inp = h("input", { type: "number", min: "0", step: "500", placeholder: "Uang diterima", inputmode: "numeric" });
+    card.append(h("div", { class: "payrow" }, inp,
+      h("button", { class: "btn sm", type: "button", onclick: () => payOrder(o, parseInt(inp.value, 10)) }, "Bayar"),
+      h("button", { class: "btn ghost sm", type: "button", onclick: () => payOrder(o, o.total) }, "Pas")));
+  }
+  if (o.status === "MENUNGGU") {
+    card.append(h("div", { class: "actions" },
+      h("button", { class: "btn ok sm", type: "button", onclick: () => setStatus(o, "SELESAI") }, "Selesai"),
+      h("button", { class: "btn bad sm", type: "button", onclick: () => { if (confirm("Batalkan pesanan " + o.queue_name + "?")) setStatus(o, "BATAL"); } }, "Batal")));
+  }
+  return card;
+}
+async function payOrder(o, received) {
+  if (!Number.isInteger(received) || received < o.total) return show("Uang diterima kurang dari total (" + rupiah(o.total) + ").", "err");
+  const { error } = await db.from("orders").update({ payment_status: "LUNAS", payment_received: received }).eq("id", o.id);
+  if (error) return show("Gagal menyimpan pembayaran: " + error.message, "err");
+  show("Lunas. Kembalian: " + rupiah(received - o.total), "ok"); loadOrders();
+}
+async function setStatus(o, status) {
+  const { error } = await db.from("orders").update({ status }).eq("id", o.id);
+  if (error) return show("Gagal mengubah status: " + error.message, "err");
+  loadOrders();
+}
+
+/* ---------- PRODUK ---------- */
 async function loadAdmin() {
   const { data, error } = await db.from("products").select("*").order("category").order("name");
   if (error) return show("Gagal memuat produk: " + error.message, "err");
-  const tb = $("rows"); tb.replaceChildren();
-  for (const p of data) {
-    const tr = document.createElement("tr");
-    const cells = [p.name, p.category, rupiah(p.price), String(p.stock)];
-    for (const t of cells) { const td = document.createElement("td"); td.textContent = t; tr.appendChild(td); }
-    const st = document.createElement("td"); const tag = document.createElement("span");
-    tag.className = "tag " + (p.active ? "on" : "off"); tag.textContent = p.active ? "Aktif" : "Nonaktif";
-    st.appendChild(tag); tr.appendChild(st);
-    const ac = document.createElement("td");
-    const be = mk("Edit", "btn ghost sm", () => editProduct(p));
-    const bt = mk(p.active ? "Nonaktifkan" : "Aktifkan", "btn ghost sm", () => toggle(p));
-    const bd = mk("Hapus", "btn bad sm", () => remove(p));
-    ac.append(be, " ", bt, " ", bd); tr.appendChild(ac);
-    tb.appendChild(tr);
-  }
+  $("rows").replaceChildren(...data.map((p) => h("tr", {},
+    h("td", {}, p.name), h("td", {}, p.category), h("td", {}, rupiah(p.price)),
+    h("td", {}, h("span", { class: "tag " + (p.active ? "on" : "off") }, p.active ? "Aktif" : "Nonaktif")),
+    h("td", {},
+      h("button", { class: "btn ghost sm", type: "button", onclick: () => editProduct(p) }, "Edit"), " ",
+      h("button", { class: "btn ghost sm", type: "button", onclick: () => toggle(p) }, p.active ? "Nonaktifkan" : "Aktifkan"), " ",
+      h("button", { class: "btn bad sm", type: "button", onclick: () => remove(p) }, "Hapus")))));
 }
-function mk(text, cls, fn) { const b = document.createElement("button"); b.className = cls; b.textContent = text; b.onclick = fn; return b; }
 function resetForm() {
   $("pid").value = ""; $("pname").value = ""; $("pprice").value = ""; $("pcat").value = "Mie Ayam";
   $("pstock").value = 0; $("pdesc").value = ""; $("pimg").value = ""; $("pactive").checked = true;
@@ -236,7 +421,6 @@ function editProduct(p) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 $("btnSave").onclick = async () => {
-  if (!isAdmin) return show("Hanya admin yang bisa menyimpan produk.", "err");
   const name = $("pname").value.trim(), price = parseInt($("pprice").value, 10), stock = parseInt($("pstock").value, 10) || 0;
   if (!name) return show("Nama produk wajib diisi.", "err");
   if (!Number.isInteger(price) || price < 0) return show("Harga harus angka 0 atau lebih.", "err");
@@ -252,7 +436,7 @@ async function toggle(p) {
   if (error) return show(error.message, "err"); loadAdmin();
 }
 async function remove(p) {
-  if (!confirm('Hapus "' + p.name + '"?')) return;
+  if (!confirm('Hapus "' + p.name + '"? Riwayat pesanan lama tetap tersimpan.')) return;
   const { error } = await db.from("products").delete().eq("id", p.id);
   if (error) return show(error.message, "err"); show("Produk dihapus.", "ok"); loadAdmin();
 }
