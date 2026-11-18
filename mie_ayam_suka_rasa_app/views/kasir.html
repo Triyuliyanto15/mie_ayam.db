@@ -1,0 +1,35 @@
+  <section id="viewKasir" class="hide">
+    <div id="doneBox" class="card done hide">
+      <div class="muted">Pesanan tersimpan. Nomor antrean:</div>
+      <div class="bignum" id="doneQ"></div>
+      <div id="doneInfo" style="margin:6px 0"></div>
+      <div class="actions" style="justify-content:center"><button class="btn" id="btnPrint" type="button">🧾 Cetak Nota</button><button class="btn ghost" id="btnNext" type="button">Pesanan Baru</button></div>
+    </div>
+    <div class="kasir">
+      <div>
+        <div class="card">
+          <h2>Pilih Menu</h2>
+          <div class="grid" id="posGrid"></div>
+          <p class="muted" id="posEmpty" hidden>Belum ada produk aktif. Tambahkan di tab Produk.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Pesanan</h2>
+        <div id="cart"></div>
+        <p class="muted" id="cartEmpty">Belum ada item. Ketuk menu di kiri.</p>
+        <div class="total"><span>Total</span><span id="cartTotal">Rp 0</span></div>
+        <label for="cpaid">Uang diterima (opsional)</label>
+        <input id="cpaid" placeholder="mis. 50.000">
+        <div class="quick" id="quick"></div>
+        <div class="total sub"><span>Kembalian</span><span id="cChange">-</span></div>
+        <label for="cname">Nama customer (opsional)</label>
+        <input id="cname" maxlength="60">
+        <label for="cnote">Catatan (opsional)</label>
+        <input id="cnote" maxlength="120" placeholder="mis. tanpa sayur, pedas">
+        <div class="actions">
+          <button class="btn ok" id="btnOrder" disabled>Simpan &amp; Beri Nomor Antrean</button>
+          <button class="btn ghost" id="btnClear">Kosongkan</button>
+        </div>
+      </div>
+    </div>
+  </section>

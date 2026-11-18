@@ -1,0 +1,40 @@
+  <section id="viewLaporan" class="hide">
+    <div class="card">
+      <h2>Laporan Bulanan</h2>
+      <div class="row">
+        <div><label for="rmonth">Pilih bulan</label><input id="rmonth" type="month"></div>
+        <div><label for="rprod">Tampilkan menu</label><select id="rprod"><option value="">Semua menu</option></select></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="muted" id="rL1">Omzet (lunas)</span><b id="rRev">Rp 0</b></div>
+      <div class="stat"><span class="muted" id="rL2">Jumlah pesanan</span><b id="rCount">0</b></div>
+      <div class="stat"><span class="muted">Rata-rata per hari buka</span><b id="rAvg">-</b></div>
+      <div class="stat"><span class="muted">Hari terbaik</span><b id="rBest">-</b></div>
+    </div>
+    <div class="card">
+      <h2 id="chartTitle">Per hari</h2>
+      <div id="chart"></div>
+    </div>
+    <div class="card">
+      <h2>Total terjual per menu (sebulan)</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Menu</th><th>Terjual</th><th>Omzet (lunas)</th></tr></thead>
+          <tbody id="rpRows"></tbody>
+          <tfoot id="rpFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Rincian per hari</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Tanggal</th><th>Pesanan</th><th>Menu terjual</th><th>Omzet (lunas)</th></tr></thead>
+          <tbody id="rRows"></tbody>
+          <tfoot id="rFoot"></tfoot>
+        </table>
+      </div>
+      <p class="muted" id="rEmpty" hidden>Belum ada pesanan di bulan ini.</p>
+    </div>
+  </section>
