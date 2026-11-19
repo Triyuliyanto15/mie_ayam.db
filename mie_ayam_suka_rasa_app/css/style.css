@@ -6,8 +6,10 @@
   header{background:var(--brand);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
   header h1{margin:0;font-size:1.2rem} header small{opacity:.9}
   main{max-width:1040px;margin:0 auto;padding:14px}
-  nav{display:flex;gap:6px;position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0;margin:0 0 10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  nav::-webkit-scrollbar{display:none}
+  nav{display:flex;gap:6px;position:sticky;top:0;z-index:20;background:var(--bg);padding:8px 0;margin:0 0 10px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--brand) var(--line);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  nav::-webkit-scrollbar{height:7px}
+  nav::-webkit-scrollbar-track{background:var(--line);border-radius:99px}
+  nav::-webkit-scrollbar-thumb{background:var(--brand);border-radius:99px}
   nav button{flex:1 0 auto;min-height:44px;padding:8px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}
   nav button:hover{border-color:var(--brand)}
   nav button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
@@ -71,3 +73,7 @@
     #receipt{display:block;width:72mm;margin:0 auto;color:#000;background:#fff;font:12px/1.4 "Courier New",monospace}
     @page{margin:3mm}
   }
+  /* cegah layar melompat & zoom saat tombol diketuk */
+  #views{min-height:60vh}
+  html{-webkit-text-size-adjust:100%}
+  button,select,.pick,.chip{touch-action:manipulation}
