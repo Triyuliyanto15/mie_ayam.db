@@ -16,6 +16,8 @@ Aplikasi kasir web (HTML + JavaScript) dengan database Supabase, dipasang lewat 
 | **Suara pemanggil** (kalimat yang diucapkan) | `js/suara.js` (fungsi `callText`) |
 | **Tab Laporan** | `views/laporan.html` + `js/laporan.js` |
 | **Tab Produk** + upload foto | `views/produk.html` + `js/produk.js` |
+| **Tab Tutup Kasir** (kas awal, selisih) | `views/tutup.html` + `js/tutup.js` |
+| **Layar antrean pelanggan** (buka `/layar.html` di TV) | `layar.html` |
 | Login admin/kasir | `views/login.html` + `js/auth.js` |
 | Perpindahan antar tab | `js/app.js` |
 | Urutan file yang dimuat | `js/main.js` |

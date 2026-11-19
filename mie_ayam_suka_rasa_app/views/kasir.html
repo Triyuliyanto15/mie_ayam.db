@@ -9,6 +9,7 @@
       <div>
         <div class="card">
           <h2>Pilih Menu</h2>
+          <div id="optBox"></div>
           <div class="grid" id="posGrid"></div>
           <p class="muted" id="posEmpty" hidden>Belum ada produk aktif. Tambahkan di tab Produk.</p>
         </div>
@@ -18,9 +19,13 @@
         <div id="cart"></div>
         <p class="muted" id="cartEmpty">Belum ada item. Ketuk menu di kiri.</p>
         <div class="total"><span>Total</span><span id="cartTotal">Rp 0</span></div>
-        <label for="cpaid">Uang diterima (opsional)</label>
-        <input id="cpaid" placeholder="mis. 50.000">
-        <div class="quick" id="quick"></div>
+        <label>Tipe pesanan</label><div class="chips" id="typeChips"></div>
+        <label>Metode pembayaran</label><div class="chips" id="payChips"></div>
+        <div id="cashBox">
+          <label for="cpaid">Uang diterima (kosongkan = bayar nanti)</label>
+          <input id="cpaid" placeholder="mis. 50.000">
+          <div class="quick" id="quick"></div>
+        </div>
         <div class="total sub"><span>Kembalian</span><span id="cChange">-</span></div>
         <label for="cname">Nama customer (opsional)</label>
         <input id="cname" maxlength="60">

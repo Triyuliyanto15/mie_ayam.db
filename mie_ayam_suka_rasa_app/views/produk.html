@@ -9,7 +9,7 @@
       <div class="row">
         <div><label for="pcat">Kategori</label>
           <select id="pcat"><option>Mie Ayam</option><option>Minuman</option><option>Tambahan</option><option>Lainnya</option></select></div>
-        <div><label for="pstock">Stok (catatan)</label><input id="pstock" type="number" min="0" value="0"></div>
+        <div><label for="pstock">Stok (0 = tidak dihitung)</label><input id="pstock" type="number" min="0" value="0"></div>
       </div>
       <label for="pdesc">Deskripsi</label><textarea id="pdesc" rows="2"></textarea>
       <label for="pfile">Foto produk (opsional, JPG/PNG)</label>
@@ -33,5 +33,14 @@
           <tbody id="rows"></tbody>
         </table>
       </div>
+    </div>
+    <div class="card">
+      <h2>Pengguna (Pemilik / Kasir)</h2>
+      <div class="row">
+        <div><label for="sEmail">Email (harus sudah Daftar)</label><input id="sEmail" type="email"></div>
+        <div><label for="sRole">Peran</label><select id="sRole"><option value="kasir">Kasir</option><option value="pemilik">Pemilik</option><option value="hapus">Hapus akses</option></select></div>
+      </div>
+      <div class="actions"><button class="btn" id="btnStaff" type="button">Simpan</button></div>
+      <div class="tablewrap"><table><thead><tr><th>Email</th><th>Peran</th></tr></thead><tbody id="staffRows"></tbody></table></div>
     </div>
   </section>

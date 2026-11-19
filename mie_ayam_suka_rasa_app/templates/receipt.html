@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 no-print"><a href="/" class="btn btn-outline-secondary">← Kembali ke kasir</a><button class="btn btn-primary" onclick="window.print()">Cetak struk (2 bagian)</button></div>
+<div class="receipt border rounded mb-4">
+<div class="text-center"><h4 class="mb-0">MIE AYAM SUKA RASA</h4><div class="small">STRUK PELANGGAN</div><div class="small">Pesanan #{{ order.id }}</div></div>
+<hr><div class="small">Antrean/Nama: <strong>{{ order.queue_name }}</strong><br>Waktu: {{ order.created_at.strftime('%d-%m-%Y %H:%M:%S') }}</div><hr>
+<table class="table table-sm"><tbody>{% for i in order.items %}<tr><td>{{ i.product_name }}<div class="small text-secondary">{{ i.quantity }} x {{ i.unit_price|rupiah }}</div></td><td class="text-end">{{ i.subtotal|rupiah }}</td></tr>{% endfor %}</tbody></table>
+<hr><div class="d-flex justify-content-between fw-bold"><span>TOTAL</span><span>{{ order.total|rupiah }}</span></div>
+<div class="d-flex justify-content-between"><span>Uang dibayar</span><span>{{ order.payment_received|rupiah }}</span></div>
+{% if order.payment_status == 'LUNAS' %}<div class="d-flex justify-content-between"><span>Kembalian</span><strong>{{ change|rupiah }}</strong></div><div class="text-center fw-bold mt-2">LUNAS — Terima kasih!</div>{% else %}<div class="d-flex justify-content-between"><span>Sisa pembayaran</span><strong>{{ shortage|rupiah }}</strong></div><div class="text-center fw-bold mt-2">⚠ BELUM LUNAS</div>{% endif %}
+</div>
+<div class="receipt border rounded">
+<div class="text-center"><h5 class="mb-0">MIE AYAM SUKA RASA</h5><div class="small fw-bold">SALINAN DAPUR / CHEF</div><div class="small">Pesanan #{{ order.id }}</div></div>
+<hr><div class="small mb-2">Antrean/Nama: <strong>{{ order.queue_name }}</strong><br>Waktu: {{ order.created_at.strftime('%d-%m-%Y %H:%M:%S') }}</div>
+<table class="table table-sm"><thead><tr><th>Menu</th><th class="text-center">Qty</th><th class="text-end">Catatan</th></tr></thead><tbody>{% for i in order.items %}<tr><td>{{ i.product_name }}</td><td class="text-center fw-bold">{{ i.quantity }}</td><td class="text-end">—</td></tr>{% endfor %}</tbody></table>
+<div class="small text-center mt-3">Mohon siapkan pesanan sesuai daftar di atas.</div>
+</div>
+<style>
+@media print{nav,.no-print{display:none!important}body{background:#fff}.container{max-width:100%;padding:0!important}.receipt{box-shadow:none!important;border:1px dashed #777!important;border-radius:0!important;max-width:80mm;padding:8mm;margin:0 auto 8mm!important;break-inside:avoid}.receipt table{font-size:12px}h4{font-size:18px}h5{font-size:16px}}
+</style>
+{% endblock %}

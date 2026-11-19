@@ -43,7 +43,7 @@ function money(el, cb) {
   });
 }
 
-let isAdmin = false, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null, cartTotal = 0;
+let isAdmin = false, isOwner = false, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null, cartTotal = 0;
 
 function show(text, type) {
   const m = $("msg");

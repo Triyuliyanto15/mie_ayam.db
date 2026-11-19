@@ -38,6 +38,7 @@ $("pfile").onchange = async () => {
 };
 $("btnImgDel").onclick = () => { $("pimg").value = ""; $("pfile").value = ""; setPreview(""); };
 async function loadAdmin() {
+  loadStaff();
   const { data, error } = await db.from("products").select("*").order("category").order("name");
   if (error) return show("Gagal memuat produk: " + error.message, "err");
   $("rows").replaceChildren(...data.map((p) => h("tr", {},
@@ -80,3 +81,14 @@ async function remove(p) {
   const { error } = await db.from("products").delete().eq("id", p.id);
   if (error) return show(error.message, "err"); show("Produk dihapus.", "ok"); loadAdmin();
 }
+
+async function loadStaff() {
+  const { data, error } = await db.rpc("list_staff");
+  if (error) return show("Gagal memuat pengguna: " + error.message, "err");
+  $("staffRows").replaceChildren(...data.map((u) => h("tr", {}, h("td", {}, u.email), h("td", {}, u.role))));
+}
+$("btnStaff").onclick = async () => {
+  const { error } = await db.rpc("set_staff", { p_email: $("sEmail").value, p_role: $("sRole").value });
+  if (error) return show(error.message, "err");
+  show("Pengguna diperbarui.", "ok"); $("sEmail").value = ""; loadStaff();
+};

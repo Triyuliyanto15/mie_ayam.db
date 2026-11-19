@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Antrean Mie Ayam Suka Rasa</title>
+<style>
+  body{margin:0;font-family:system-ui,sans-serif;background:#1c130c;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+  h1{margin:0;padding:14px;text-align:center;background:#d9480f;font-size:clamp(1.2rem,3vw,2rem)}
+  .cols{flex:1;display:grid;grid-template-columns:1fr 1fr}
+  section{padding:16px;text-align:center} section+section{background:#14391c}
+  h2{margin:0 0 14px;font-size:clamp(1.2rem,3vw,2.2rem)}
+  .nums{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .n{font-size:clamp(2rem,7vw,5rem);font-weight:900;padding:6px 18px;border-radius:14px;background:#ffffff18}
+  .ready .n{background:#2f9e44;animation:b 1.2s ease-in-out 3}
+  @keyframes b{50%{transform:scale(1.12)}}
+  @media(max-width:600px){.cols{grid-template-columns:1fr}}
+</style></head><body>
+<h1>🍜 Mie Ayam Suka Rasa</h1>
+<div class="cols">
+  <section><h2>Sedang disiapkan</h2><div class="nums" id="prep"></div></section>
+  <section class="ready"><h2>Siap diambil ✓</h2><div class="nums" id="ready"></div></section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const db = window.supabase.createClient("https://xwxcegylykvqzwypypvx.supabase.co", "sb_publishable_I-fiTcoCDDGYX1ay9a5TnQ_Te3xFCzN");
+const fill = (id, list) => { const e = document.getElementById(id); e.replaceChildren(...list.map((q) => { const d = document.createElement("div"); d.className = "n"; d.textContent = q; return d; })); };
+let last = "";
+async function tick() {
+  const { data } = await db.rpc("queue_board");
+  if (!data) return;
+  const k = JSON.stringify(data); if (k === last) return; last = k;
+  fill("prep", data.preparing); fill("ready", data.ready);
+}
+tick(); setInterval(tick, 5000);
+</script></body></html>

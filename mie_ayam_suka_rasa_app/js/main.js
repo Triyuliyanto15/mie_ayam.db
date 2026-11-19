@@ -1,7 +1,7 @@
 // PEMUAT APLIKASI: memuat isi tab dari folder views/, lalu file JavaScript satu per satu.
 // Urutan di SCRIPTS penting: file di bawah boleh memakai fungsi dari file di atasnya.
-const VIEWS = ["menu", "login", "kasir", "antrean", "laporan", "produk"];
-const SCRIPTS = ["config", "auth", "menu", "nota", "suara", "kasir", "antrean", "laporan", "produk", "app"];
+const VIEWS = ["menu", "login", "kasir", "antrean", "tutup", "laporan", "produk"];
+const SCRIPTS = ["config", "auth", "menu", "nota", "suara", "kasir", "antrean", "tutup", "laporan", "produk", "app"];
 
 (async () => {
   const parts = await Promise.all(VIEWS.map((v) => fetch("views/" + v + ".html").then((r) => {

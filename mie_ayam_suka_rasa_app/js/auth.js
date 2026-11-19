@@ -2,7 +2,7 @@
 /* ---------- AUTH ---------- */
 async function refreshAuth() {
   const { data: { session } } = await db.auth.getSession();
-  isAdmin = false;
+  isAdmin = false; isOwner = false; applyRole();
   $("btnGateLogout").classList.toggle("hide", !session);
   if (!session) { $("who").textContent = ""; $("gateNote").textContent = "Pengguna pertama yang masuk otomatis menjadi admin. Akun lain tidak bisa membuat pesanan atau mengubah produk."; return; }
   const { data: ok, error } = await db.rpc("claim_admin");
@@ -11,8 +11,9 @@ async function refreshAuth() {
     $("gateNote").textContent = "Akun ini bukan admin/kasir, jadi tidak bisa membuka halaman ini. Keluar lalu masuk dengan akun admin.";
     return;
   }
-  isAdmin = true;
-  $("who").textContent = "Kasir: " + session.user.email;
+  const { data: role } = await db.rpc("my_role");
+  isOwner = role === "pemilik"; isAdmin = true; applyRole();
+  $("who").textContent = (isOwner ? "Pemilik: " : "Kasir: ") + session.user.email;
 }
 $("btnLogin").onclick = async () => {
   const { error } = await db.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
