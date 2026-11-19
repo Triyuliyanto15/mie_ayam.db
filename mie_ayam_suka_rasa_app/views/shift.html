@@ -1,0 +1,38 @@
+  <section id="viewShift" class="hide">
+    <div id="shiftOpenBox" class="card hide">
+      <h2>Buka Kasir</h2>
+      <p class="muted">Isi uang tunai yang ada di laci saat mulai berjualan (kas awal). Boleh 0. Di akhir hari, sistem menghitung berapa uang tunai yang seharusnya ada.</p>
+      <label for="sOpening">Kas awal (Rp)</label>
+      <input id="sOpening" placeholder="mis. 200.000">
+      <div class="actions"><button class="btn ok" id="btnShiftOpen" type="button">Buka Kasir</button></div>
+    </div>
+    <div id="shiftRunBox" class="card hide">
+      <h2>Kasir Sedang Buka</h2>
+      <p class="muted" id="sSince"></p>
+      <div class="stats">
+        <div class="stat"><span class="muted">Kas awal</span><b id="sOpen">Rp 0</b></div>
+        <div class="stat"><span class="muted">Penjualan tunai</span><b id="sCash">Rp 0</b></div>
+        <div class="stat"><span class="muted">QRIS</span><b id="sQris">Rp 0</b></div>
+        <div class="stat"><span class="muted">Transfer</span><b id="sTrf">Rp 0</b></div>
+        <div class="stat"><span class="muted">Pesanan lunas</span><b id="sOrders">0</b></div>
+      </div>
+      <div class="total"><span>Uang tunai seharusnya di laci</span><span id="sExpected">Rp 0</span></div>
+      <div id="sWarn" class="msg err hide"></div>
+      <label for="sCounted">Uang tunai yang dihitung di laci (Rp)</label>
+      <input id="sCounted" placeholder="hitung uang di laci, lalu isi di sini">
+      <div class="total sub"><span>Selisih</span><span id="sDiff">-</span></div>
+      <label for="sNote">Catatan (opsional)</label>
+      <input id="sNote" maxlength="120" placeholder="mis. ada uang kembalian yang kurang">
+      <div class="actions"><button class="btn bad" id="btnShiftClose" type="button">Tutup Kasir</button></div>
+    </div>
+    <div id="shiftDoneBox" class="card done hide"></div>
+    <div id="shiftHistBox" class="card hide">
+      <h2>Riwayat Tutup Kasir</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Ditutup</th><th>Kas awal</th><th>Tunai</th><th>QRIS</th><th>Transfer</th><th>Seharusnya</th><th>Dihitung</th><th>Selisih</th></tr></thead>
+          <tbody id="shiftRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>

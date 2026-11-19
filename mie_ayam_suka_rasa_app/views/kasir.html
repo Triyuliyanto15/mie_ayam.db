@@ -9,28 +9,30 @@
       <div>
         <div class="card">
           <h2>Pilih Menu</h2>
-          <div id="optBox"></div>
           <div class="grid" id="posGrid"></div>
           <p class="muted" id="posEmpty" hidden>Belum ada produk aktif. Tambahkan di tab Produk.</p>
         </div>
       </div>
       <div class="card">
         <h2>Pesanan</h2>
+        <div class="muted">Tipe pesanan</div>
+        <div class="chips" id="typeChips"></div>
         <div id="cart"></div>
         <p class="muted" id="cartEmpty">Belum ada item. Ketuk menu di kiri.</p>
         <div class="total"><span>Total</span><span id="cartTotal">Rp 0</span></div>
-        <label>Tipe pesanan</label><div class="chips" id="typeChips"></div>
-        <label>Metode pembayaran</label><div class="chips" id="payChips"></div>
+        <div class="muted">Pembayaran</div>
+        <div class="chips" id="methodChips"></div>
         <div id="cashBox">
-          <label for="cpaid">Uang diterima (kosongkan = bayar nanti)</label>
+          <label for="cpaid">Uang diterima</label>
           <input id="cpaid" placeholder="mis. 50.000">
           <div class="quick" id="quick"></div>
+          <div class="total sub"><span>Kembalian</span><span id="cChange">-</span></div>
         </div>
-        <div class="total sub"><span>Kembalian</span><span id="cChange">-</span></div>
+        <p class="muted hide" id="payNote"></p>
         <label for="cname">Nama customer (opsional)</label>
         <input id="cname" maxlength="60">
         <label for="cnote">Catatan (opsional)</label>
-        <input id="cnote" maxlength="120" placeholder="mis. tanpa sayur, pedas">
+        <input id="cnote" maxlength="120" placeholder="mis. tanpa sayur, kuah dipisah">
         <div class="actions">
           <button class="btn ok" id="btnOrder" disabled>Simpan &amp; Beri Nomor Antrean</button>
           <button class="btn ghost" id="btnClear">Kosongkan</button>

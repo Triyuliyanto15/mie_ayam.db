@@ -1,0 +1,22 @@
+  <section id="viewPengguna" class="hide">
+    <div class="card">
+      <h2>Tambah / Ubah Pengguna</h2>
+      <p class="muted">Cara menambah kasir: (1) orangnya membuka website ini, klik Daftar, lalu konfirmasi emailnya. (2) Masukkan emailnya di sini dan pilih perannya.</p>
+      <div class="row">
+        <div><label for="uEmail">Email</label><input id="uEmail" type="email" placeholder="email@contoh.com"></div>
+        <div><label for="uRole">Peran</label>
+          <select id="uRole"><option value="kasir">Kasir</option><option value="pemilik">Pemilik</option></select></div>
+      </div>
+      <div class="actions"><button class="btn" id="btnStaffSave" type="button">Simpan</button></div>
+      <p class="muted"><b>Kasir:</b> membuat pesanan, menerima pembayaran, melihat antrean hari ini, dan menutup kasir. <b>Pemilik:</b> semua fitur, termasuk Laporan, Produk, dan Pengguna.</p>
+    </div>
+    <div class="card">
+      <h2>Daftar Pengguna</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Email</th><th>Peran</th><th>Aksi</th></tr></thead>
+          <tbody id="staffRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>

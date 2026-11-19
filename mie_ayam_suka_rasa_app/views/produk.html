@@ -9,7 +9,7 @@
       <div class="row">
         <div><label for="pcat">Kategori</label>
           <select id="pcat"><option>Mie Ayam</option><option>Minuman</option><option>Tambahan</option><option>Lainnya</option></select></div>
-        <div><label for="pstock">Stok (0 = tidak dihitung)</label><input id="pstock" type="number" min="0" value="0"></div>
+        <div><label for="pstock">Stok (isi lebih dari 0 agar stok berkurang otomatis)</label><input id="pstock" type="number" min="0" value="0"></div>
       </div>
       <label for="pdesc">Deskripsi</label><textarea id="pdesc" rows="2"></textarea>
       <label for="pfile">Foto produk (opsional, JPG/PNG)</label>
@@ -35,12 +35,17 @@
       </div>
     </div>
     <div class="card">
-      <h2>Pengguna (Pemilik / Kasir)</h2>
+      <h2>Topping &amp; Pilihan</h2>
+      <p class="muted">Muncul sebagai tombol saat kasir mengetuk menu. Topping yang berharga akan menambah harga per porsi. Topping bawaan masih nonaktif dan berharga 0: isi harganya lalu aktifkan.</p>
+      <div id="toppingList"></div>
+      <h3 style="margin:16px 0 4px">Tambah kelompok baru</h3>
       <div class="row">
-        <div><label for="sEmail">Email (harus sudah Daftar)</label><input id="sEmail" type="email"></div>
-        <div><label for="sRole">Peran</label><select id="sRole"><option value="kasir">Kasir</option><option value="pemilik">Pemilik</option><option value="hapus">Hapus akses</option></select></div>
+        <div><label for="tgName">Nama kelompok</label><input id="tgName" maxlength="40" placeholder="mis. Ukuran"></div>
+        <div><label for="tgCat">Berlaku untuk kategori</label>
+          <select id="tgCat"><option value="">Semua kategori</option><option>Mie Ayam</option><option>Minuman</option><option>Tambahan</option><option>Lainnya</option></select></div>
       </div>
-      <div class="actions"><button class="btn" id="btnStaff" type="button">Simpan</button></div>
-      <div class="tablewrap"><table><thead><tr><th>Email</th><th>Peran</th></tr></thead><tbody id="staffRows"></tbody></table></div>
+      <label><input id="tgMulti" type="checkbox" checked style="width:auto"> Boleh pilih lebih dari satu</label>
+      <label><input id="tgReq" type="checkbox" style="width:auto"> Wajib dipilih</label>
+      <div class="actions"><button class="btn" id="btnGroupAdd" type="button">Tambah Kelompok</button></div>
     </div>
   </section>

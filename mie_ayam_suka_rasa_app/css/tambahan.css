@@ -1,0 +1,13 @@
+/* Tambahan tampilan: jendela topping, tag info, kotak kelompok topping, tombol tautan. */
+.tag.info{background:#d0ebff;color:#0b4a7d}
+@media (prefers-color-scheme:dark){.tag.info{background:#12385a;color:#bfe2ff}}
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:14px;z-index:50}
+.modal{width:100%;max-width:460px;max-height:90vh;overflow:auto;margin:0}
+.mgroup{margin:12px 0}
+.mtitle{font-weight:700;margin-bottom:6px}
+.merr{color:var(--bad);font-size:.9rem;min-height:1.2em;margin-top:6px}
+.mgroupbox{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px}
+.mgroupbox .payrow{margin-top:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+#viewKasir select,#viewAntrean select{margin-bottom:6px}

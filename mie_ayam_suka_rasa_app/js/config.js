@@ -43,7 +43,14 @@ function money(el, cb) {
   });
 }
 
-let isAdmin = false, isOwner = false, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null, cartTotal = 0;
+/* ---------- LABEL ---------- */
+const ORDER_TYPES = { DINE_IN: "Makan di tempat", TAKEAWAY: "Bungkus", ONLINE: "GoFood/Grab" };
+const PAY_METHODS = { TUNAI: "Tunai", QRIS: "QRIS", TRANSFER: "Transfer" };
+
+/* ---------- STATUS BERSAMA ---------- */
+// myRole: "pemilik" | "kasir" | null (belum masuk). isAdmin = sudah masuk sebagai pemilik atau kasir.
+let isAdmin = false, myRole = null, currentTab = "menu", products = [], cart = new Map(), orderFilter = "MENUNGGU", refreshTimer = null, cartTotal = 0;
+let modGroups = [], orderType = "DINE_IN", payMethod = "TUNAI";
 
 function show(text, type) {
   const m = $("msg");

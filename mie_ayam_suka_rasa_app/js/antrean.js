@@ -1,4 +1,4 @@
-// TAB ANTREAN: daftar pesanan hari ini, bayar, selesai, batal.
+// TAB ANTREAN: daftar pesanan hari ini, bayar (tunai/QRIS/transfer), selesai, batal (dengan alasan).
 /* ---------- ANTREAN ---------- */
 const FILTERS = [["MENUNGGU", "Menunggu"], ["SELESAI", "Selesai"], ["BATAL", "Batal"], ["SEMUA", "Semua"]];
 function renderChips() {
@@ -9,7 +9,7 @@ async function loadOrders() {
   renderChips();
   $("antreanDate").textContent = "Hari ini: " + new Date().toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long", year: "numeric" });
   const { data, error } = await db.from("orders")
-    .select("id,queue_name,queue_number,customer_name,note,total,payment_status,payment_received,status,created_at,order_type,payment_method,cancel_reason,order_items(product_name,unit_price,quantity,subtotal,modifier_text)")
+    .select("id,queue_name,queue_number,customer_name,note,total,payment_status,payment_received,payment_method,order_type,cancel_reason,status,created_at,order_items(product_name,unit_price,quantity,subtotal,modifier_text)")
     .eq("order_date", todayWIB()).order("queue_number", { ascending: true });
   if (error) return show("Gagal memuat antrean: " + error.message, "err");
   const live = data.filter((o) => o.status !== "BATAL");
@@ -22,11 +22,15 @@ async function loadOrders() {
 }
 function orderCard(o) {
   const paid = o.payment_status === "LUNAS";
-  const items = h("ul", {}, (o.order_items || []).map((i) => h("li", {}, i.quantity + "× " + i.product_name + (i.modifier_text ? " (" + i.modifier_text + ")" : "") + " — " + rupiah(i.subtotal))));
+  const method = o.payment_method || (paid ? "TUNAI" : null);
+  const items = h("ul", {}, (o.order_items || []).map((i) => h("li", {},
+    i.quantity + "× " + i.product_name + " — " + rupiah(i.subtotal),
+    i.modifier_text ? h("div", { class: "muted" }, i.modifier_text) : null)));
   const card = h("div", { class: "order" + (o.status === "SELESAI" ? " done-o" : "") + (o.status === "BATAL" ? " cancel" : "") },
     h("div", { style: "display:flex;justify-content:space-between;align-items:center" },
       h("span", { class: "q" }, o.queue_name || ("#" + o.id)),
       h("span", { class: "muted" }, dateTimeWIB(o.created_at))),
+    h("div", { style: "margin-top:4px" }, h("span", { class: "tag info" }, ORDER_TYPES[o.order_type] || "Makan di tempat")),
     o.customer_name ? h("div", {}, "👤 " + o.customer_name) : null,
     items,
     o.note ? h("div", { class: "muted" }, "Catatan: " + o.note) : null,
@@ -35,55 +39,61 @@ function orderCard(o) {
       h("span", { class: "tag " + (o.status === "MENUNGGU" ? "wait" : o.status === "SELESAI" ? "on" : "off") }, o.status),
       " ",
       h("span", { class: "tag " + (paid ? "on" : "off") }, paid ? "LUNAS" : "BELUM LUNAS"),
-      " ", h("span", { class: "muted" }, (TYPE_LABEL[o.order_type] || "") + (paid && o.payment_method ? " · " + o.payment_method : ""))),
-    o.status === "BATAL" && o.cancel_reason ? h("div", { class: "muted" }, "Alasan batal: " + o.cancel_reason) : null);
-  if (paid) card.append(h("div", { class: "muted" }, "Diterima " + rupiah(o.payment_received) + " · Kembali " + rupiah(Math.max(0, o.payment_received - o.total))));
-  if (!paid && o.status !== "BATAL") {
-    const inp = h("input", { type: "text", placeholder: "Uang diterima" });
-    const chg = h("div", { class: "chg muted" });
-    const sel = h("select", {}, ["TUNAI", "QRIS", "TRANSFER"].map((m) => h("option", { value: m }, m)));
-    money(inp, () => {
-      if (!inp.value) { chg.textContent = ""; return; }
-      const v = numOf(inp);
-      chg.textContent = v < o.total ? "Kurang " + rupiah(o.total - v) : "Kembalian " + rupiah(v - o.total);
-      chg.style.color = v < o.total ? "var(--bad)" : "var(--ok)";
-    });
-    card.append(h("div", { class: "payrow" }, inp, sel,
-      h("button", { class: "btn sm", type: "button", onclick: () => payOrder(o, numOf(inp), sel.value) }, "Bayar"),
-      h("button", { class: "btn ghost sm", type: "button", onclick: () => payOrder(o, o.total, sel.value) }, "Pas")), chg);
-  }
+      paid && method ? h("span", { class: "tag info", style: "margin-left:4px" }, PAY_METHODS[method]) : null));
+  if (paid && method === "TUNAI") card.append(h("div", { class: "muted" }, "Diterima " + rupiah(o.payment_received) + " · Kembali " + rupiah(Math.max(0, o.payment_received - o.total))));
+  if (o.status === "BATAL" && o.cancel_reason) card.append(h("div", { class: "muted" }, "Alasan batal: " + o.cancel_reason));
+  if (!paid && o.status !== "BATAL") card.append(payControls(o));
   if (o.status !== "BATAL") {
     card.append(h("div", { class: "actions" },
       h("button", { class: "btn ghost sm", type: "button", onclick: () => printNota(notaOf(o)) }, "🧾 Nota"),
       o.status === "SELESAI" ? h("button", { class: "btn ghost sm", type: "button", onclick: () => announce(o, true) }, "🔊 Panggil") : null));
   }
-  if (o.status === "MENUNGGU") {
-    card.append(h("div", { class: "actions" },
-      h("button", { class: "btn ok sm", type: "button", onclick: () => setStatus(o, "SELESAI") }, "Selesai"),
-      h("button", { class: "btn bad sm", type: "button", onclick: () => cancelOrder(o) }, "Batal")));
-  }
+  if (o.status === "MENUNGGU") card.append(h("div", { class: "actions" },
+    h("button", { class: "btn ok sm", type: "button", onclick: () => setStatus(o, "SELESAI") }, "Selesai")));
+  if (o.status !== "BATAL") card.append(h("div", { class: "actions" },
+    h("button", { class: "btn bad sm", type: "button", onclick: () => cancelOrder(o) }, "Batal")));
   return card;
 }
+// Pilihan pembayaran untuk pesanan yang belum lunas
+function payControls(o) {
+  let method = "TUNAI";
+  const sel = h("select", {}, Object.entries(PAY_METHODS).map(([k, v]) => h("option", { value: k }, v)));
+  const inp = h("input", { type: "text", placeholder: "Uang diterima" });
+  const chg = h("div", { class: "chg muted" });
+  money(inp, () => {
+    if (!inp.value) { chg.textContent = ""; return; }
+    const v = numOf(inp);
+    chg.textContent = v < o.total ? "Kurang " + rupiah(o.total - v) : "Kembalian " + rupiah(v - o.total);
+    chg.style.color = v < o.total ? "var(--bad)" : "var(--ok)";
+  });
+  const cash = h("div", {},
+    h("div", { class: "payrow" }, inp,
+      h("button", { class: "btn sm", type: "button", onclick: () => payOrder(o, numOf(inp), "TUNAI") }, "Bayar"),
+      h("button", { class: "btn ghost sm", type: "button", onclick: () => payOrder(o, o.total, "TUNAI") }, "Pas")), chg);
+  const other = h("div", { class: "payrow hide" },
+    h("button", { class: "btn sm", type: "button", onclick: () => payOrder(o, o.total, method) }, "Pembayaran sudah masuk"));
+  sel.onchange = () => { method = sel.value; cash.classList.toggle("hide", method !== "TUNAI"); other.classList.toggle("hide", method === "TUNAI"); };
+  return h("div", { style: "margin-top:8px" }, sel, cash, other);
+}
 async function payOrder(o, received, method) {
-  method = method || "TUNAI"; if (method !== "TUNAI") received = o.total;
   if (!Number.isInteger(received) || received < o.total) return show("Uang diterima kurang dari total (" + rupiah(o.total) + ").", "err");
   const { error } = await db.from("orders").update({ payment_status: "LUNAS", payment_received: received, payment_method: method }).eq("id", o.id);
   if (error) return show("Gagal menyimpan pembayaran: " + error.message, "err");
-  show("Lunas. Kembalian: " + rupiah(received - o.total), "ok"); loadOrders();
+  show(method === "TUNAI" ? "Lunas. Kembalian: " + rupiah(received - o.total) : "Lunas (" + PAY_METHODS[method] + ").", "ok"); loadOrders();
 }
-async function setStatus(o, status) {
-  const { error } = await db.from("orders").update({ status }).eq("id", o.id);
+async function setStatus(o, status, reason) {
+  const patch = { status };
+  if (reason) patch.cancel_reason = reason;
+  const { error } = await db.from("orders").update(patch).eq("id", o.id);
   if (error) return show("Gagal mengubah status: " + error.message, "err");
   if (status === "SELESAI") announce(o);
   loadOrders();
 }
-
 async function cancelOrder(o) {
-  const paid = o.payment_status === "LUNAS";
-  const r = prompt(paid ? "Pesanan " + o.queue_name + " SUDAH LUNAS. Tulis alasan pembatalan (wajib):" : "Alasan pembatalan " + o.queue_name + " (boleh kosong):");
-  if (r === null) return;
-  if (paid && !r.trim()) return show("Alasan wajib diisi untuk pesanan yang sudah lunas.", "err");
-  const { error } = await db.from("orders").update({ status: "BATAL", cancel_reason: r.trim() || null }).eq("id", o.id);
-  if (error) return show("Gagal membatalkan: " + error.message, "err");
-  loadOrders();
+  if (o.payment_status === "LUNAS") {
+    const reason = (prompt("Pesanan " + o.queue_name + " sudah lunas. Tulis alasan pembatalan (wajib). Uang " + rupiah(o.total) + " perlu dikembalikan ke pelanggan:") || "").trim();
+    if (!reason) return show("Pembatalan tidak dilakukan: alasan wajib diisi.", "err");
+    return setStatus(o, "BATAL", reason);
+  }
+  if (confirm("Batalkan pesanan " + o.queue_name + "?")) setStatus(o, "BATAL");
 }
