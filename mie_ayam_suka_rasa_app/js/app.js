@@ -8,6 +8,7 @@ async function tab(name) {
   clearInterval(refreshTimer);
   for (const k of Object.keys(views)) {
     $(tabs[k]).classList.toggle("on", k === name);
+    if (k === name) { $(tabs[k]).setAttribute("aria-current", "page"); $(tabs[k]).scrollIntoView({ inline: "center", block: "nearest" }); } else $(tabs[k]).removeAttribute("aria-current");
     $(views[k]).classList.add("hide");
   }
   $("viewGate").classList.add("hide");
